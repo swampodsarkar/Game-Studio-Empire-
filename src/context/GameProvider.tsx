@@ -552,13 +552,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
         if (p.employees.length >= maxEmp) {
           return withNotes(p, mkNote({ title: 'Office full', body: 'Upgrade your office to hire more staff.', type: 'warning' }))
         }
+        const hireCost = 50
+        if (p.money < hireCost) {
+          return withNotes(p, mkNote({ title: 'Not enough cash', body: `Hiring costs ${formatMoney(hireCost)} upfront.`, type: 'warning' }))
+        }
         created = emp
         const missions = p.missions.map((m) =>
           m.type === 'hire' ? { ...m, progress: Math.min(m.goal, m.progress + 1) } : m,
         )
         const note = mkNote({ title: `🧑‍💻 Hired ${emp.name}`, body: `${ROLE_LABELS[role]} joined your studio. Salary $${emp.salary}/wk.`, type: 'success' })
         return withNotes(
-          { ...p, employees: [...p.employees, emp], missions, season: { ...p.season, xp: p.season.xp + 20 } },
+          { ...p, money: p.money - hireCost, employees: [...p.employees, emp], missions, season: { ...p.season, xp: p.season.xp + 20 } },
           note,
         )
       })
@@ -568,6 +572,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   )
 
   const fireEmployee = useCallback((id: string) => {
+    if (id === 'emp_self') return
     setPlayer((p) => (p ? { ...p, employees: p.employees.filter((e) => e.id !== id) } : p))
   }, [])
 

@@ -72,7 +72,7 @@ function Resource({ icon, value, color }: { icon: string; value: ReactNode; colo
   )
 }
 
-export function TopBar({ onOpenSettings }: { onOpenSettings: () => void }) {
+export function TopBar({ onOpenSettings, onOpenHelp }: { onOpenSettings: () => void; onOpenHelp?: () => void }) {
   const { player, autoPlay, autoSpeed, setAutoSpeed, toggleAutoPlay, markNotificationsRead, clearNotifications } =
     useGame()
   const { user, signOut } = useAuth()
@@ -164,6 +164,11 @@ export function TopBar({ onOpenSettings }: { onOpenSettings: () => void }) {
               </button>
             ))}
           </div>
+        )}
+        {onOpenHelp && (
+          <button onClick={onOpenHelp} className="rounded-xl bg-white/5 px-3 py-2 text-lg hover:bg-white/10" title="How to play">
+            ❓
+          </button>
         )}
         <button onClick={onOpenSettings} className="rounded-xl bg-white/5 px-3 py-2 text-lg hover:bg-white/10" title="Options">
           ⚙

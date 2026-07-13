@@ -385,7 +385,7 @@ export const PUBLISHING: PublishingDef[] = [
     icon: '🔒',
     description: 'Platform pays a big bonus and boosts sales, but locks you to one platform.',
     revenueShare: 1,
-    advanceMult: 1.2,
+    advanceMult: 1.0,
     ratingBonus: 3,
     fanMult: 0.8,
   },

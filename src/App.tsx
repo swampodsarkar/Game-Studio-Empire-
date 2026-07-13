@@ -26,6 +26,7 @@ import { WeeklyReportModal } from './components/WeeklyReportModal'
 import { EventModal } from './components/EventModal'
 import { SettingsModal } from './components/SettingsModal'
 import { HowToPlayModal } from './components/HowToPlayModal'
+import { OnboardingModal } from './components/OnboardingModal'
 import { ToastLayer } from './components/ToastLayer'
 import { StudioSplash } from './components/StudioSplash'
 import { loadPrefs, applyPrefs, type UiPrefs } from './lib/uiPrefs'
@@ -80,6 +81,8 @@ function Splash() {
   )
 }
 
+const ONBOARD_KEY = 'gse_onboarded'
+
 function GameRoot() {
   const { player, loading, claimLoginReward, resetGame, setAutoSpeed } = useGame()
   const [screen, setScreen] = useState<ScreenId>('dashboard')
@@ -87,6 +90,9 @@ function GameRoot() {
   const [prefs, setPrefs] = useState<UiPrefs>(loadPrefs)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try { return localStorage.getItem(ONBOARD_KEY) !== '1' } catch { return true }
+  })
   const { user } = useAuth()
   const isAdmin = !!user?.isAdmin
 
@@ -176,7 +182,7 @@ function GameRoot() {
       )}
       <Sidebar active={screen} onNavigate={setScreen} isAdmin={isAdmin} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <TopBar onOpenSettings={() => setSettingsOpen(true)} />
+        <TopBar onOpenSettings={() => setSettingsOpen(true)} onOpenHelp={() => setHelpOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 pb-24 md:p-6 md:pb-6">
           <AnimatePresence mode="wait">
             <motion.div
@@ -193,6 +199,14 @@ function GameRoot() {
         </main>
       </div>
       <MobileNav active={screen} onNavigate={setScreen} isAdmin={isAdmin} />
+      {showOnboarding && (
+        <OnboardingModal
+          onDone={() => {
+            setShowOnboarding(false)
+            try { localStorage.setItem(ONBOARD_KEY, '1') } catch {}
+          }}
+        />
+      )}
       <WeeklyReportModal />
       <EventModal />
       <HowToPlayModal open={helpOpen} onClose={() => setHelpOpen(false)} />
