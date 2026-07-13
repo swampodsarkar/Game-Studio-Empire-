@@ -132,7 +132,7 @@ function GameRoot() {
   }, [player?.week])
 
   if (loading) return <Splash />
-  if (!player) return <SetupScreen />
+  if (!player) return <SetupScreen onDone={() => setStarted(true)} />
   if (!started)
     return (
       <>

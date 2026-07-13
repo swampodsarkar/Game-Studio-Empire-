@@ -4,7 +4,7 @@ import { GlassCard } from '../components/ui/GlassCard'
 import { Button } from '../components/ui/Button'
 import { AVATARS, COUNTRIES } from '../config/gameConfig'
 
-export function SetupScreen() {
+export function SetupScreen({ onDone }: { onDone?: () => void }) {
   const { setupProfile } = useGame()
   const [username, setUsername] = useState('')
   const [avatar, setAvatar] = useState(AVATARS[0])
@@ -49,7 +49,7 @@ export function SetupScreen() {
         <Button
           className="w-full"
           disabled={username.trim().length < 2}
-          onClick={() => setupProfile(username.trim(), avatar, country)}
+          onClick={() => { setupProfile(username.trim(), avatar, country); onDone?.() }}
         >
           🚀 Start Empire
         </Button>
