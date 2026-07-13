@@ -1,0 +1,520 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(124, 92, 255, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(34, 211, 238, 0.12), transparent 55%),
+    #070a14;
+  color: #e7ecf5;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .glass {
+    @apply rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl shadow-card;
+  }
+  .glass-strong {
+    @apply rounded-2xl border border-white/15 bg-white/[0.07] backdrop-blur-2xl shadow-card;
+  }
+
+  /* Game panel: beveled dark metal/neon plate with inner highlight + soft
+     outer glow. Replaces the flat "web" glass look. */
+  .game-panel {
+    position: relative;
+    border-radius: 14px;
+    border: 1px solid rgba(34, 211, 238, 0.22);
+    background:
+      linear-gradient(160deg, rgba(22, 30, 52, 0.92), rgba(9, 13, 24, 0.95));
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+      inset 0 0 0 1px rgba(124, 92, 255, 0.06),
+      0 0 0 1px rgba(34, 211, 238, 0.05),
+      0 18px 44px -18px rgba(0, 0, 0, 0.85),
+      0 0 26px -10px rgba(34, 211, 238, 0.35);
+  }
+  .game-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0 18px auto 18px;
+    top: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.85), rgba(124, 92, 255, 0.85), transparent);
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+  }
+  .game-panel::after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    height: 7px;
+    width: 7px;
+    border-right: 1.5px solid rgba(34, 211, 238, 0.5);
+    border-bottom: 1.5px solid rgba(34, 211, 238, 0.5);
+    border-bottom-right-radius: 4px;
+  }
+
+  /* Game meter: segmented, glowing progress bar. */
+  .game-meter {
+    height: 10px;
+    width: 100%;
+    border-radius: 6px;
+    overflow: hidden;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0px,
+        rgba(255, 255, 255, 0.05) 2px,
+        transparent 2px,
+        transparent 12px
+      ),
+      rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+  }
+  .game-meter-fill {
+    height: 100%;
+    border-radius: 5px;
+    box-shadow: 0 0 12px -1px currentColor, inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transition: width 0.5s ease;
+  }
+
+  /* Game button: beveled, angled corners, glowing, with a shine sweep. */
+  .btn-game {
+    position: relative;
+    overflow: hidden;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    font-family: 'Chakra Petch', system-ui, sans-serif;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(34, 211, 238, 0.35);
+    background: linear-gradient(180deg, rgba(34, 211, 238, 0.22), rgba(124, 92, 255, 0.18));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -3px 8px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(0, 0, 0, 0.3),
+      0 8px 22px -10px rgba(34, 211, 238, 0.6);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    transition: transform 0.08s ease, filter 0.15s ease;
+  }
+  .btn-game::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -120%;
+    height: 100%;
+    width: 60%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+    transform: skewX(-18deg);
+    transition: left 0.5s ease;
+  }
+  .btn-game:hover {
+    filter: brightness(1.15);
+  }
+  .btn-game:hover::after {
+    left: 130%;
+  }
+  .btn-game:active {
+    transform: translateY(2px);
+    filter: brightness(0.92);
+    box-shadow:
+      inset 0 2px 6px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(0, 0, 0, 0.3);
+  }
+  /* HUD panel: sci-fi framed card with a cyan top accent and corner ticks. */
+  .hud-panel {
+    @apply relative rounded-xl border border-cyan-300/20 bg-ink-800/50 backdrop-blur-xl;
+    box-shadow:
+      0 0 0 1px rgba(34, 211, 238, 0.06),
+      0 12px 40px -18px rgba(0, 0, 0, 0.8),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+  .hud-panel::before {
+    content: '';
+    @apply pointer-events-none absolute inset-x-4 top-0 h-px;
+    background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.7), transparent);
+  }
+  .hud-corner::after {
+    content: '';
+    @apply pointer-events-none absolute right-2 top-2 h-2 w-2 border-r border-t border-cyan-300/50;
+  }
+  .hud-title {
+    @apply font-display uppercase tracking-[0.2em];
+  }
+  /* Applied to every GlassCard for a subtle HUD frame. */
+  .hud-card {
+    @apply relative overflow-hidden border-cyan-300/15;
+  }
+  .hud-card::before {
+    content: '';
+    @apply pointer-events-none absolute inset-x-5 top-0 h-px opacity-60;
+    background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.8), transparent);
+  }
+  .neon-text {
+    text-shadow: 0 0 10px rgba(124, 92, 255, 0.7), 0 0 24px rgba(34, 211, 238, 0.4);
+  }
+  .input {
+    @apply w-full rounded-xl border border-white/10 bg-ink-800/60 px-3 py-2 text-sm text-white
+      outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-400/30;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium;
+  }
+  .label {
+    @apply mb-1 block text-xs font-semibold uppercase tracking-wider text-white/50;
+  }
+
+  /* Pixel / retro display font for game headings, HUD labels and the title. */
+  .font-pixel {
+    font-family: 'Press Start 2P', 'Chakra Petch', monospace;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+  }
+  .font-mono-game {
+    font-family: 'VT323', 'Chakra Petch', monospace;
+  }
+
+  /* ── Neon arcade 2D game-world backdrop ── */
+  .arcade-floor {
+    position: absolute;
+    left: -25%;
+    right: -25%;
+    bottom: -2%;
+    height: 52%;
+    perspective: 320px;
+    perspective-origin: 50% 0%;
+    overflow: hidden;
+    mask-image: linear-gradient(to top, black 60%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to top, black 60%, transparent 100%);
+  }
+  .arcade-floor-grid {
+    position: absolute;
+    inset: -50% -50% -10% -50%;
+    transform: rotateX(74deg);
+    transform-origin: 50% 100%;
+    background-image:
+      linear-gradient(rgba(34, 211, 238, 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124, 92, 255, 0.45) 1px, transparent 1px);
+    background-size: 44px 44px;
+    animation: floor-scroll 2.6s linear infinite;
+    box-shadow: 0 0 60px rgba(34, 211, 238, 0.25) inset;
+  }
+  .arcade-floor-grid--far {
+    opacity: 0.4;
+    animation-duration: 4.2s;
+    background-size: 88px 88px;
+  }
+  @keyframes floor-scroll {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 0 44px;
+    }
+  }
+  .animate-twinkle {
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.2;
+      transform: scale(0.8);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+  .animate-sprite-float {
+    animation: sprite-float 7s ease-in-out infinite;
+  }
+  @keyframes sprite-float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-6deg);
+    }
+    50% {
+      transform: translateY(-18px) rotate(8deg);
+    }
+  }
+}
+
+/* ── Game viewport frame: makes the whole app read like a PC game HUD ── */
+.game-frame {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 45;
+}
+.game-frame .frame-border {
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(34, 211, 238, 0.12);
+  border-radius: 18px;
+  box-shadow:
+    inset 0 0 70px rgba(34, 211, 238, 0.05),
+    inset 0 0 1px rgba(124, 92, 255, 0.4);
+}
+.corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-color: rgba(34, 211, 238, 0.6);
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.5));
+}
+.corner.tl {
+  top: 8px;
+  left: 8px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+  border-top-left-radius: 16px;
+}
+.corner.tr {
+  top: 8px;
+  right: 8px;
+  border-top: 2px solid;
+  border-right: 2px solid;
+  border-top-right-radius: 16px;
+}
+.corner.bl {
+  bottom: 8px;
+  left: 8px;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+  border-bottom-left-radius: 16px;
+}
+.corner.br {
+  bottom: 8px;
+  right: 8px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+  border-bottom-right-radius: 16px;
+}
+.frame-label {
+  position: absolute;
+  font-family: 'Press Start 2P', 'Chakra Petch', monospace;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(34, 211, 238, 0.6);
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+  animation: label-blink 3.5s steps(1) infinite;
+}
+.frame-label--tl {
+  left: 22px;
+  bottom: 16px;
+}
+.frame-label--tr {
+  right: 22px;
+  top: 18px;
+  color: rgba(74, 222, 128, 0.75);
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+}
+.frame-label--br {
+  right: 22px;
+  bottom: 16px;
+  color: rgba(244, 114, 182, 0.7);
+  text-shadow: 0 0 8px rgba(244, 114, 182, 0.55);
+  animation: label-blink 1.6s steps(1) infinite;
+}
+@keyframes label-blink {
+  0%,
+  90%,
+  100% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 0.35;
+  }
+}
+
+/* CRT scanline + flicker overlay */
+.scanlines-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 46;
+  opacity: 0.5;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.5) 0px,
+    rgba(255, 255, 255, 0.5) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  animation: crt-flicker 7s infinite steps(1);
+}
+@keyframes crt-flicker {
+  0%,
+  100% {
+    opacity: 0.045;
+  }
+  50% {
+    opacity: 0.06;
+  }
+  92% {
+    opacity: 0.06;
+  }
+  93% {
+    opacity: 0.025;
+  }
+  94% {
+    opacity: 0.06;
+  }
+  97% {
+    opacity: 0.04;
+  }
+  98% {
+    opacity: 0.06;
+  }
+}
+
+/* ── Logo emblem ── */
+.emblem {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6a40ff, #22d3ee);
+  box-shadow:
+    0 0 22px -4px rgba(124, 92, 255, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.emblem::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* ── Boot / loading screen ── */
+.boot-track {
+  height: 4px;
+  width: 240px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.boot-fill {
+  height: 100%;
+  width: 40%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #6a40ff, #22d3ee);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.8);
+  animation: boot-slide 1.4s ease-in-out infinite;
+}
+@keyframes boot-slide {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+/* Determinate loading bar used on the splash / loading screen. */
+.boot-bar {
+  height: 10px;
+  width: 280px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  box-shadow: inset 0 0 18px -6px rgba(34, 211, 238, 0.6);
+}
+.boot-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6a40ff, #22d3ee);
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.8);
+  transition: width 0.2s ease;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* ── UI preference toggles (Options menu) ── */
+.no-scanlines .scanlines-overlay {
+  display: none;
+}
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.001s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01s !important;
+}
+
+/* ── Screen shake (week advance / big events) ── */
+.animate-shake {
+  animation: screen-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes screen-shake {
+  10%,
+  90% {
+    transform: translate3d(-2px, 0, 0);
+  }
+  20%,
+  80% {
+    transform: translate3d(3px, 0, 0);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-5px, 0, 0);
+  }
+  40%,
+  60% {
+    transform: translate3d(5px, 0, 0);
+  }
+}
+
+/* ── Week transition banner ── */
+.week-flash {
+  animation: week-pop 1.5s ease-out forwards;
+}
+@keyframes week-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(20px);
+    letter-spacing: 0.5em;
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    letter-spacing: 0.1em;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.05) translateY(-10px);
+  }
+}
