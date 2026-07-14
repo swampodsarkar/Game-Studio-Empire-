@@ -13,14 +13,16 @@ import {
   ROLE_LABELS,
   UPGRADES,
 } from '../config/gameConfig'
-import type { CustomEngine, EmployeeRole } from '../types'
+import type { CustomEngine, EmployeeRole, PlayerState } from '../types'
 import { formatMoney } from '../lib/format'
 import { upgradeEffect, upgradeLevel, engineUpgradeCost } from '../lib/gameLogic'
 
 export function Studio() {
+  const { player } = useGame()
   const [tab, setTab] = useTabState('employees')
   return (
     <div>
+      {player && <StudioHub player={player} />}
       <Tabs
         tabs={[
           { id: 'employees', label: 'Employees', icon: '👥' },
@@ -36,6 +38,47 @@ export function Studio() {
         {tab === 'engines' && <Engines />}
       </div>
     </div>
+  )
+}
+
+function StudioHub({ player }: { player: PlayerState }) {
+  const depts = [
+    { role: 'Programmer', icon: '🧑‍💻', label: 'DEV', color: '#22d3ee', count: player.employees.filter((e) => e.role === 'Programmer').length },
+    { role: 'Artist', icon: '🎨', label: 'ART', color: '#f472b6', count: player.employees.filter((e) => e.role === 'Artist').length },
+    { role: 'Designer', icon: '🎲', label: 'DESIGN', color: '#a78bfa', count: player.employees.filter((e) => e.role === 'Designer').length },
+    { role: 'Producer', icon: '📋', label: 'PROD', color: '#34d399', count: player.employees.filter((e) => e.role === 'Producer').length },
+  ]
+  const maxEmp = upgradeEffect(player.upgrades, 'office')
+  const officeLvl = upgradeLevel(player.upgrades, 'office')
+  const rent = OFFICE_BASE_RENT + officeLvl * OFFICE_RENT_PER_LEVEL + player.employees.length * OFFICE_RENT_PER_HEAD
+  const payroll = player.employees.reduce((s, e) => s + e.salary, 0)
+  return (
+    <GlassCard glow className="mb-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="font-pixel text-[11px] uppercase text-accent-cyan">Studio Hub</h3>
+        <span className="font-mono-game text-base text-white/40">{player.employees.length} crew on deck · {player.employees.length}/{maxEmp} seats</span>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {depts.map((d) => (
+          <div
+            key={d.role}
+            className="relative overflow-hidden rounded-xl border border-white/10 bg-white/5 p-3"
+            style={{ boxShadow: `inset 0 0 0 1px ${d.color}22` }}
+          >
+            <div className="text-2xl">{d.icon}</div>
+            <div className="mt-1 font-pixel text-[9px] uppercase tracking-wider" style={{ color: d.color }}>
+              {d.label}
+            </div>
+            <div className="font-mono-game text-2xl font-bold text-white">{d.count}</div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-white/50">
+        <span>💵 Cash {formatMoney(player.money)}</span>
+        <span>🧾 Payroll {formatMoney(payroll)}/wk</span>
+        <span>🏢 Rent {formatMoney(rent)}/wk</span>
+      </div>
+    </GlassCard>
   )
 }
 

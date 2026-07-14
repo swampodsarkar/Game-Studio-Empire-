@@ -14,13 +14,6 @@ export function Dashboard() {
   const active = player.games.filter((g) => !g.released)
   const released = player.games.filter((g) => g.released)
 
-  const depts = [
-    { role: 'Programmer', icon: '🧑‍💻', label: 'DEV', color: '#22d3ee', count: player.employees.filter((e) => e.role === 'Programmer').length },
-    { role: 'Artist', icon: '🎨', label: 'ART', color: '#f472b6', count: player.employees.filter((e) => e.role === 'Artist').length },
-    { role: 'Designer', icon: '🎲', label: 'DESIGN', color: '#a78bfa', count: player.employees.filter((e) => e.role === 'Designer').length },
-    { role: 'Producer', icon: '📋', label: 'PROD', color: '#34d399', count: player.employees.filter((e) => e.role === 'Producer').length },
-  ]
-
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-2">
@@ -47,45 +40,6 @@ export function Dashboard() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
-          {/* 2D Studio Hub — stylized command map (no literal office scene) */}
-          <GlassCard glow>
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-pixel text-[11px] uppercase text-accent-cyan">Studio Hub</h3>
-              <span className="font-mono-game text-base text-white/40">{player.employees.length} crew on deck</span>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {depts.map((d) => (
-                <div
-                  key={d.role}
-                  className="relative overflow-hidden rounded-xl border border-white/10 bg-white/5 p-3"
-                  style={{ boxShadow: `inset 0 0 0 1px ${d.color}22` }}
-                >
-                  <div className="text-2xl">{d.icon}</div>
-                  <div className="mt-1 font-pixel text-[9px] uppercase tracking-wider" style={{ color: d.color }}>
-                    {d.label}
-                  </div>
-                  <div className="font-mono-game text-2xl font-bold text-white">{d.count}</div>
-                  <div className="absolute right-2 top-2 h-8 w-8 rounded-full opacity-20 blur-xl" style={{ background: d.color }} />
-                </div>
-              ))}
-            </div>
-            <div className="relative mt-3 flex h-24 items-center justify-center overflow-hidden rounded-xl border border-cyan-300/10 bg-ink-900/40">
-              <div className="emblem h-12 w-12 text-2xl">🎮</div>
-              {['👾', '🪙', '⚡', '💾'].map((s, i) => (
-                <motion.span
-                  key={i}
-                  className="absolute text-2xl opacity-60 drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
-                  style={{ left: `${12 + i * 24}%` }}
-                  animate={{ y: [0, -12, 0], rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 5 + i, repeat: Infinity, ease: 'easeInOut', delay: i * 0.3 }}
-                >
-                  {s}
-                </motion.span>
-              ))}
-              <div className="absolute bottom-1 font-mono-game text-sm text-white/40">{player.username} HQ</div>
-            </div>
-          </GlassCard>
-
           <GlassCard>
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-lg font-bold text-white">In Development</h3>
