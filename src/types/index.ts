@@ -165,6 +165,14 @@ export interface SalesData {
   revenueToDate?: number
 }
 
+export interface Trailer {
+  id: string
+  title: string
+  views: number
+  likes: number
+  releasedAt: number
+}
+
 export interface GameProject {
   id: string
   name: string
@@ -193,9 +201,10 @@ export interface GameProject {
   // Marketing hype accumulated during development (0..100).
   hype?: number
   campaigns?: string[]
-  // YouTube trailer released during development (free, once per game) — used to
-  // gauge audience interest and give a small hype bump.
-  trailer?: { views: number; likes: number; releasedAt: number }
+  // YouTube trailers released during development (free, multiple per game) —
+  // used to gauge audience interest and give a small hype bump. Views/likes
+  // keep accumulating every week so the channel feels alive.
+  trailers?: Trailer[]
   // Post-launch support.
   bugs?: number
   patches?: number

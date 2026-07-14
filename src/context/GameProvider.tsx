@@ -13,6 +13,7 @@ import type {
   Platform,
   PlayerState,
   Stock,
+  Trailer,
 } from '../types'
 import {
   AWARD_CATEGORIES,
@@ -95,6 +96,18 @@ export interface WeeklyReport {
 // Pure one-week simulation. Advances every project, runs sales, applies the
 // economy (salaries, loan interest, licensing royalties, season XP), ticks the
 // market + stock prices, evaluates achievements, and returns the next state.
+function growTrailers(g: GameProject, audience: number): GameProject {
+  if (!g.trailers || g.trailers.length === 0) return g
+  const interest = g.released ? g.review?.score ?? 50 : g.hype ?? 0
+  const weeklyViews = clamp(interest * 220 + audience * 0.012 + 150, 30, 250_000)
+  const trailers = g.trailers.map((t) => {
+    const nv = Math.round(weeklyViews * rand(0.7, 1.3))
+    const nl = Math.round(nv * rand(0.03, 0.09))
+    return { ...t, views: t.views + nv, likes: t.likes + nl }
+  })
+  return { ...g, trailers }
+}
+
 function simulateOneWeek(
   p: PlayerState,
   market: MarketSnapshot,
@@ -235,6 +248,12 @@ function simulateOneWeek(
         }
       }
     }
+  }
+
+  // YouTube trailers keep accumulating views/likes every week so the channel
+  // feels alive (real-time growth) rather than freezing at release.
+  for (let i = 0; i < games.length; i++) {
+    games[i] = growTrailers(games[i], fans)
   }
 
   const week = p.week + 1
@@ -471,6 +490,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
               ? g.platforms
               : [(g as unknown as { platform?: Platform }).platform ?? 'Steam'],
             tags: Array.isArray(g.tags) ? g.tags : [],
+            // Migrate the old single `trailer` field to the `trailers` array.
+            trailers: Array.isArray((g as unknown as { trailers?: Trailer[] }).trailers)
+              ? (g as unknown as { trailers: Trailer[] }).trailers
+              : (g as unknown as { trailer?: Trailer }).trailer
+                ? [
+                    {
+                      id: uid('tr'),
+                      title: 'Trailer 1',
+                      views: (g as unknown as { trailer: Trailer }).trailer.views,
+                      likes: (g as unknown as { trailer: Trailer }).trailer.likes,
+                      releasedAt: (g as unknown as { trailer: Trailer }).trailer.releasedAt,
+                    },
+                  ]
+                : [],
             // Reconcile revenue-to-date with copies sold so legacy saves that
             // drifted (launch multiplier / old DLC logic) display consistent
             // numbers: revenueToDate ≈ sold * (revenue / lifetime).
@@ -787,25 +820,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!p) return p
       const g = p.games.find((x) => x.id === gameId)
       if (!g || g.released) return p
-      if (g.trailer) {
-        return withNotes(p, mkNote({ title: 'Trailer already out', body: `${g.name} already has a trailer.`, type: 'info' }))
+      if ((g.trailers?.length ?? 0) >= 5) {
+        return withNotes(p, mkNote({ title: 'Trailer limit', body: `${g.name} already has 5 trailers.`, type: 'info' }))
       }
       const hype = g.hype ?? 0
       const audience = p.fans
       const reach = clamp(hype * 1500 + audience * 0.02 + g.marketingBudget * 3 + 3000, 1000, 8_000_000)
       const views = Math.round(reach * rand(0.6, 1.6))
       const likes = Math.round(views * rand(0.04, 0.16))
+      const number = (g.trailers?.length ?? 0) + 1
+      const trailer: Trailer = { id: uid('tr'), title: `Trailer ${number}`, views, likes, releasedAt: Date.now() }
       return withNotes(
         {
           ...p,
           games: p.games.map((x) =>
             x.id === gameId
-              ? { ...x, hype: clamp(hype + 10, 0, 100), trailer: { views, likes, releasedAt: Date.now() } }
+              ? { ...x, hype: clamp(hype + 10, 0, 100), trailers: [...(x.trailers ?? []), trailer] }
               : x,
           ),
         },
         mkNote({
-          title: `🎬 YouTube trailer live!`,
+          title: `🎬 ${trailer.title} live!`,
           body: `${g.name}: ${views.toLocaleString()} views · ${likes.toLocaleString()} likes. Hype is building!`,
           type: 'success',
         }),

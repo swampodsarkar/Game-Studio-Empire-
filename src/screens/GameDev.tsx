@@ -371,14 +371,28 @@ function GameDetail({ gameId }: { gameId: string }) {
             <div className="space-y-3">
               <StatBar value={Math.round(g.hype ?? 0)} color="#f472b6" label="Hype" />
               <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-                <div className="mb-2 text-sm font-semibold text-white">🎬 YouTube Trailer</div>
-                {g.trailer ? (
-                  <div className="text-sm">
-                    <div className="font-semibold text-white">{g.name} — Trailer is live</div>
-                    <div className="mt-1 text-white/60">
-                      {formatNumber(g.trailer.views)} views · {formatNumber(g.trailer.likes)} likes
-                    </div>
-                    <div className="mt-1 text-[11px] text-white/40">Hype: {Math.round(g.hype ?? 0)}/100 — gauge interest before launch.</div>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-white">🎬 YouTube Trailers</span>
+                  <span className="text-[11px] text-white/40">{(g.trailers?.length ?? 0)}/5</span>
+                </div>
+                {g.trailers && g.trailers.length > 0 ? (
+                  <div className="space-y-2">
+                    {g.trailers.map((t) => (
+                      <div key={t.id} className="text-sm">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-white">{t.title}</span>
+                          <span className="text-[11px] text-white/40">Hype {Math.round(g.hype ?? 0)}/100</span>
+                        </div>
+                        <div className="text-white/60">
+                          {formatNumber(t.views)} views · {formatNumber(t.likes)} likes
+                        </div>
+                      </div>
+                    ))}
+                    {(g.trailers?.length ?? 0) < 5 && (
+                      <Button size="sm" variant="ghost" className="w-full" onClick={() => releaseTrailer(g.id)}>
+                        🎬 Release Another Trailer (free)
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <Button size="sm" variant="ghost" className="w-full" onClick={() => releaseTrailer(g.id)}>
