@@ -1,11 +1,11 @@
-import { motion } from 'framer-motion'
 import { useGame } from '../context/GameContext'
 import { GlassCard } from '../components/ui/GlassCard'
+import { BarChart } from '../components/charts/Charts'
 import { Stat } from '../components/ui/Stat'
 import { StatBar } from '../components/ui/StatBar'
 import { Icon } from '../components/ui/Icon'
 import { AnimatedNumber } from '../components/ui/AnimatedNumber'
-import { formatMoney, formatNumber, formatDate } from '../lib/format'
+import { formatMoney, formatNumber } from '../lib/format'
 
 export function Dashboard() {
   const { player, globalRank } = useGame()
@@ -19,6 +19,22 @@ export function Dashboard() {
   allTrailers.sort((a, b) => b.trailer.views - a.trailer.views)
   const totalViews = allTrailers.reduce((s, x) => s + x.trailer.views, 0)
   const totalLikes = allTrailers.reduce((s, x) => s + x.trailer.likes, 0)
+
+  const releasedGames = player.games.filter((g) => g.released && g.sales)
+  const topGames = [...releasedGames]
+    .sort((a, b) => (b.sales?.revenue ?? 0) - (a.sales?.revenue ?? 0))
+    .slice(0, 8)
+  const salesBar = {
+    labels: topGames.map((g) => g.name),
+    datasets: [
+      {
+        label: 'Revenue',
+        data: topGames.map((g) => g.sales?.revenue ?? 0),
+        backgroundColor: '#34d399',
+        borderRadius: 6,
+      },
+    ],
+  }
 
   return (
     <div className="space-y-5">
@@ -68,6 +84,11 @@ export function Dashboard() {
                       <span>{formatNumber(trailer.views)} views</span>
                       <span>{formatNumber(trailer.likes)} likes</span>
                     </div>
+                    {trailer.comments && trailer.comments.length > 0 && (
+                      <div className="mt-1 truncate text-[11px] text-white/40">
+                        💬 {trailer.comments[0].avatar} {trailer.comments[0].author}: {trailer.comments[0].text}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -76,57 +97,39 @@ export function Dashboard() {
 
           <GlassCard>
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white">In Development</h3>
-              <span className="text-xs text-white/40">{active.length} active</span>
+              <h3 className="text-lg font-bold text-white">📊 Sales Performance</h3>
+              <span className="text-xs text-white/40">{releasedGames.length} games shipped</span>
             </div>
-              {active.length === 0 ? (
-                <p className="text-sm text-white/40">No games in development. Head to Game Dev to start one!</p>
-              ) : (
-                <div className="max-h-[38vh] space-y-3 overflow-y-auto scrollbar-thin pr-1">
-                  {active.map((g) => (
-                    <div key={g.id} className="rounded-xl bg-white/5 p-3">
-                      <div className="mb-1 flex items-center justify-between">
-                        <span className="font-semibold text-white">{g.name}</span>
-                        <span className="chip">{g.phase}</span>
-                      </div>
-                      <StatBar value={Math.round(g.progress * 100)} color="#22d3ee" label="Phase Progress" />
-                      <div className="mt-1 text-xs text-white/40">
-                        {g.genre} · {g.theme} · {g.platforms.join(', ')} · Week {g.weeksSpent}/{g.devTimeWeeks}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </GlassCard>
+            {releasedGames.length === 0 ? (
+              <p className="text-sm text-white/40">Release your first game to see sales here.</p>
+            ) : (
+              <BarChart data={salesBar} height={260} />
+            )}
+          </GlassCard>
         </div>
 
         <div className="lg:col-span-1 flex items-center">
           <GlassCard className="w-full">
-            <h3 className="mb-3 text-lg font-bold text-white">Top Released Games</h3>
-            {released.length === 0 ? (
-              <p className="text-sm text-white/40">Release your first game to see performance here.</p>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-white">In Development</h3>
+              <span className="text-xs text-white/40">{active.length} active</span>
+            </div>
+            {active.length === 0 ? (
+              <p className="text-sm text-white/40">No games in development. Head to Game Dev to start one!</p>
             ) : (
-              <div className="max-h-[38vh] space-y-2 overflow-y-auto scrollbar-thin pr-1">
-                {[...released]
-                  .sort((a, b) => (b.sales?.revenue ?? 0) - (a.sales?.revenue ?? 0))
-                  .slice(0, 5)
-                  .map((g) => (
-                    <motion.div
-                      key={g.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center justify-between rounded-xl bg-white/5 p-3"
-                    >
-                      <div>
-                        <div className="font-semibold text-white">{g.name}</div>
-                        <div className="text-xs text-white/40">{g.genre} · {formatDate(player.week)}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-accent-green">{formatMoney(g.sales?.revenue ?? 0)}</div>
-                        <div className="text-xs text-white/50">Score {g.review?.score ?? '—'}</div>
-                      </div>
-                    </motion.div>
-                  ))}
+              <div className="max-h-[38vh] space-y-3 overflow-y-auto scrollbar-thin pr-1">
+                {active.map((g) => (
+                  <div key={g.id} className="rounded-xl bg-white/5 p-3">
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="font-semibold text-white">{g.name}</span>
+                      <span className="chip">{g.phase}</span>
+                    </div>
+                    <StatBar value={Math.round(g.progress * 100)} color="#22d3ee" label="Phase Progress" />
+                    <div className="mt-1 text-xs text-white/40">
+                      {g.genre} · {g.theme} · {g.platforms.join(', ')} · Week {g.weeksSpent}/{g.devTimeWeeks}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </GlassCard>

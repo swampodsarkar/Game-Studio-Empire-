@@ -137,11 +137,22 @@ export interface ReviewComment {
   text: string
 }
 
+export interface PublicReview {
+  id: string
+  author: string
+  avatar: string
+  score: number
+  text: string
+  hours: number
+  helpful: number
+}
+
 export interface Review {
   score: number
   criticScore: number
   userScore: number
   comments: ReviewComment[]
+  userReviews?: PublicReview[]
 }
 
 export interface SalesData {
@@ -165,12 +176,22 @@ export interface SalesData {
   revenueToDate?: number
 }
 
+export interface YouTubeComment {
+  id: string
+  author: string
+  avatar: string
+  text: string
+  likes: number
+  pinned?: boolean
+}
+
 export interface Trailer {
   id: string
   title: string
   views: number
   likes: number
   releasedAt: number
+  comments: YouTubeComment[]
 }
 
 export interface GameProject {

@@ -49,6 +49,7 @@ import { generateEvent } from '../lib/events'
 import { createInitialPlayer } from '../lib/initialState'
 import { loadPlayer, saveLeaderboardEntry, savePlayer } from '../repository'
 import { clamp, pick, rand, randInt, formatMoney, formatNumber } from '../lib/format'
+import { generateTrailerComments } from '../lib/youtube'
 import {
   CAMPAIGNS,
   DIFFICULTY,
@@ -66,11 +67,27 @@ function mkNote(n: Omit<Notification, 'id' | 'createdAt' | 'read'>): Notificatio
   return { ...n, id: uid('n'), createdAt: Date.now(), read: false }
 }
 
+// Merge new notifications into an existing list, dropping any that duplicate an
+// already-present message. Prevents the same notification from stacking in the
+// feed (e.g. recurring events) and caps the list length.
+function appendNotes(existing: Notification[], incoming: Notification[]): Notification[] {
+  const seen = new Set<string>()
+  const out: Notification[] = []
+  for (const n of [...incoming, ...existing]) {
+    const sig = `${n.type}|${n.title}|${n.body}`
+    if (seen.has(sig)) continue
+    seen.add(sig)
+    out.push(n)
+    if (out.length >= 50) break
+  }
+  return out
+}
+
 // Return a copy of the player state with notes prepended. Used INSIDE state
 // updaters so we never call setState from within another setState (which breaks
 // under React StrictMode's double-invocation and caused duplicate/lost notes).
 function withNotes(p: PlayerState, ...notes: Notification[]): PlayerState {
-  return { ...p, notifications: [...notes, ...p.notifications].slice(0, 50) }
+  return { ...p, notifications: appendNotes(p.notifications, notes) }
 }
 
 const EVENTS = [
@@ -428,7 +445,7 @@ function simulateOneWeek(
 
   // Rebuild notifications to capture level-up / achievement / event notes
   // that were generated after the initial `next` construction.
-  next.notifications = [...notifications, ...p.notifications].slice(0, 50)
+  next.notifications = appendNotes(p.notifications, notifications)
 
   return { player: next, market: nextMarket, notes: notifications }
 }
@@ -493,7 +510,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             // Migrate the old single `trailer` field to the `trailers` array.
             trailers: Array.isArray((g as unknown as { trailers?: Trailer[] }).trailers)
               ? (g as unknown as { trailers: Trailer[] }).trailers
-              : (g as unknown as { trailer?: Trailer }).trailer
+                : (g as unknown as { trailer?: Trailer }).trailer
                 ? [
                     {
                       id: uid('tr'),
@@ -501,6 +518,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
                       views: (g as unknown as { trailer: Trailer }).trailer.views,
                       likes: (g as unknown as { trailer: Trailer }).trailer.likes,
                       releasedAt: (g as unknown as { trailer: Trailer }).trailer.releasedAt,
+                      comments: [],
                     },
                   ]
                 : [],
@@ -829,7 +847,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const views = Math.round(reach * rand(0.6, 1.6))
       const likes = Math.round(views * rand(0.04, 0.16))
       const number = (g.trailers?.length ?? 0) + 1
-      const trailer: Trailer = { id: uid('tr'), title: `Trailer ${number}`, views, likes, releasedAt: Date.now() }
+      const trailer: Trailer = {
+        id: uid('tr'),
+        title: `Trailer ${number}`,
+        views,
+        likes,
+        releasedAt: Date.now(),
+        comments: generateTrailerComments(hype),
+      }
       return withNotes(
         {
           ...p,

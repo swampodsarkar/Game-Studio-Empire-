@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useGame } from '../context/GameContext'
+import { reviewSummary } from '../lib/reviews'
 import { GlassCard } from '../components/ui/GlassCard'
 import { Button } from '../components/ui/Button'
 import { StatBar } from '../components/ui/StatBar'
@@ -378,13 +379,26 @@ function GameDetail({ gameId }: { gameId: string }) {
                 {g.trailers && g.trailers.length > 0 ? (
                   <div className="space-y-2">
                     {g.trailers.map((t) => (
-                      <div key={t.id} className="text-sm">
+                      <div key={t.id} className="rounded-lg bg-black/20 p-2">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-white">{t.title}</span>
                           <span className="text-[11px] text-white/40">Hype {Math.round(g.hype ?? 0)}/100</span>
                         </div>
                         <div className="text-white/60">
-                          {formatNumber(t.views)} views · {formatNumber(t.likes)} likes
+                          {formatNumber(t.views)} views · {formatNumber(t.likes)} likes · {t.comments?.length ?? 0} comments
+                        </div>
+                        <div className="mt-2 space-y-1.5">
+                          {(t.comments ?? []).slice(0, 4).map((c) => (
+                            <div key={c.id} className={`flex gap-2 text-xs ${c.pinned ? 'rounded-md bg-brand-500/15 p-1.5' : ''}`}>
+                              <span>{c.avatar}</span>
+                              <div className="min-w-0">
+                                <span className="font-semibold text-white/80">{c.author}</span>
+                                {c.pinned && <span className="ml-1 text-[10px] text-accent-cyan">📌 pinned</span>}
+                                <div className="text-white/60">{c.text}</div>
+                                <div className="text-[10px] text-white/40">{formatNumber(c.likes)} likes</div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))}
@@ -443,6 +457,32 @@ function GameDetail({ gameId }: { gameId: string }) {
               ))}
             </div>
           </div>
+          {g.review?.userReviews && g.review.userReviews.length > 0 && (
+            <div className="rounded-xl bg-white/5 p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-lg font-bold text-white">🗣️ Player Reviews</span>
+                <span className="text-sm text-white/50">{g.review.userReviews.length} reviews</span>
+              </div>
+              <UserReviewBar reviews={g.review.userReviews} />
+              <div className="mt-3 max-h-64 space-y-2 overflow-y-auto scrollbar-thin pr-1">
+                {g.review.userReviews.slice(0, 30).map((r) => (
+                  <div key={r.id} className="flex gap-2 rounded-lg bg-black/20 p-2 text-sm">
+                    <span className="text-xl">{r.avatar}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-white/80">{r.author}</span>
+                        <span className={`text-xs font-bold ${r.score >= 75 ? 'text-accent-green' : r.score >= 40 ? 'text-accent-amber' : 'text-accent-red'}`}>
+                          {r.score}/100
+                        </span>
+                      </div>
+                      <div className="text-white/60">{r.text}</div>
+                      <div className="text-[11px] text-white/40">{r.hours}h played · {formatNumber(r.helpful)} found helpful</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {g.sales && (
             <>
               <div className="rounded-xl bg-white/5 p-4">
@@ -511,6 +551,19 @@ function Metric({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl bg-white/5 p-3">
       <div className="text-xs text-white/40">{label}</div>
       <div className="font-bold text-white">{value}</div>
+    </div>
+  )
+}
+
+function UserReviewBar({ reviews }: { reviews: import('../types').PublicReview[] }) {
+  const { positive, neutral, negative } = reviewSummary(reviews)
+  const total = reviews.length || 1
+  const seg = (n: number) => `${((n / total) * 100).toFixed(0)}%`
+  return (
+    <div className="flex h-2.5 overflow-hidden rounded-full bg-white/10">
+      <div className="bg-accent-green" style={{ width: seg(positive) }} />
+      <div className="bg-accent-amber" style={{ width: seg(neutral) }} />
+      <div className="bg-accent-red" style={{ width: seg(negative) }} />
     </div>
   )
 }
