@@ -96,6 +96,7 @@ export function TitleScreen({ onStart, onNewGame, onOpenHelp, onOpenSettings }: 
           className="mt-8 flex flex-wrap items-center justify-center gap-3 font-mono-game text-base text-white/80"
         >
           <span className="hud-panel px-4 py-2">{player.avatar} {player.username}</span>
+          <span className="hud-panel px-4 py-2">LV.{player.level}</span>
           <span className="hud-panel px-4 py-2">$ {formatMoney(player.money)}</span>
           <span className="hud-panel px-4 py-2">{formatNumber(player.fans)} FANS</span>
           <span className="hud-panel px-4 py-2">WEEK {player.week}</span>
