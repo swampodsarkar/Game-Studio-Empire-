@@ -66,11 +66,27 @@ function mkNote(n: Omit<Notification, 'id' | 'createdAt' | 'read'>): Notificatio
   return { ...n, id: uid('n'), createdAt: Date.now(), read: false }
 }
 
+// Merge new notifications into an existing list, dropping any that duplicate an
+// already-present message. Prevents the same notification from stacking in the
+// feed (e.g. recurring events) and caps the list length.
+function appendNotes(existing: Notification[], incoming: Notification[]): Notification[] {
+  const seen = new Set<string>()
+  const out: Notification[] = []
+  for (const n of [...incoming, ...existing]) {
+    const sig = `${n.type}|${n.title}|${n.body}`
+    if (seen.has(sig)) continue
+    seen.add(sig)
+    out.push(n)
+    if (out.length >= 50) break
+  }
+  return out
+}
+
 // Return a copy of the player state with notes prepended. Used INSIDE state
 // updaters so we never call setState from within another setState (which breaks
 // under React StrictMode's double-invocation and caused duplicate/lost notes).
 function withNotes(p: PlayerState, ...notes: Notification[]): PlayerState {
-  return { ...p, notifications: [...notes, ...p.notifications].slice(0, 50) }
+  return { ...p, notifications: appendNotes(p.notifications, notes) }
 }
 
 const EVENTS = [
@@ -428,7 +444,7 @@ function simulateOneWeek(
 
   // Rebuild notifications to capture level-up / achievement / event notes
   // that were generated after the initial `next` construction.
-  next.notifications = [...notifications, ...p.notifications].slice(0, 50)
+  next.notifications = appendNotes(p.notifications, notifications)
 
   return { player: next, market: nextMarket, notes: notifications }
 }
