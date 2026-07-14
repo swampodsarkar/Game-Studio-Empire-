@@ -12,9 +12,31 @@ import { AuthContext, type AuthUser } from './AuthContext'
 const LOCAL_UID_KEY = 'gse_local_uid'
 const LOCAL_EMAIL_KEY = 'gse_local_email'
 
+function safeLocalGet(key: string): string | null {
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+function safeLocalSet(key: string, val: string): void {
+  try {
+    localStorage.setItem(key, val)
+  } catch {
+    // Ignore storage failures (private mode / quota exceeded).
+  }
+}
+function safeLocalRemove(key: string): void {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    // Ignore.
+  }
+}
+
 function makeLocalUid() {
   const uid = 'local_' + Math.random().toString(36).slice(2, 10)
-  localStorage.setItem(LOCAL_UID_KEY, uid)
+  safeLocalSet(LOCAL_UID_KEY, uid)
   return uid
 }
 
@@ -25,11 +47,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isFirebaseConfigured || !auth) {
       // Offline local mode.
-      const uid =
-        localStorage.getItem(LOCAL_UID_KEY) || makeLocalUid()
+      const uid = safeLocalGet(LOCAL_UID_KEY) || makeLocalUid()
       setUser({
         uid,
-        email: localStorage.getItem(LOCAL_EMAIL_KEY),
+        email: safeLocalGet(LOCAL_EMAIL_KEY),
         displayName: null,
         isAdmin: false,
         isAnonymous: true,
@@ -61,9 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       async signIn(email: string, password: string) {
         if (!isFirebaseConfigured || !auth) {
-          localStorage.setItem(LOCAL_EMAIL_KEY, email)
+          safeLocalSet(LOCAL_EMAIL_KEY, email)
           setUser({
-            uid: localStorage.getItem(LOCAL_UID_KEY) || makeLocalUid(),
+            uid: safeLocalGet(LOCAL_UID_KEY) || makeLocalUid(),
             email,
             displayName: null,
             isAdmin: ADMIN_UIDS.includes(email),
@@ -75,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async signUp(email: string, password: string) {
         if (!isFirebaseConfigured || !auth) {
-          localStorage.setItem(LOCAL_EMAIL_KEY, email)
+          safeLocalSet(LOCAL_EMAIL_KEY, email)
           setUser({
             uid: makeLocalUid(),
             email,
@@ -102,8 +123,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async signOut() {
         if (!isFirebaseConfigured || !auth) {
-          localStorage.removeItem(LOCAL_UID_KEY)
-          localStorage.removeItem(LOCAL_EMAIL_KEY)
+          safeLocalRemove(LOCAL_UID_KEY)
+          safeLocalRemove(LOCAL_EMAIL_KEY)
           setUser(null)
           return
         }

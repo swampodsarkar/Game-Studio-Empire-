@@ -36,7 +36,6 @@ export function createInitialPlayer(
     missions: generateMissions(1),
     lastLogin: Date.now(),
     streak: 0,
-    _lastClaimDay: new Date().toDateString(),
     employees: [
         {
           id: 'emp_self',

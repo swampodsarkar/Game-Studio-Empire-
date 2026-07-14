@@ -245,7 +245,7 @@ export default function App() {
   // (with its progress bar) before revealing the main menu.
   useEffect(() => {
     if (!studioDone) return
-    const t = window.setTimeout(() => setReady(true), 15000)
+    const t = window.setTimeout(() => setReady(true), 1200)
     return () => window.clearTimeout(t)
   }, [studioDone])
 

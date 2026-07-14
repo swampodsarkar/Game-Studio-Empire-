@@ -15,7 +15,11 @@ export async function savePlayer(player: PlayerState): Promise<void> {
   if (isFirebaseConfigured && db) {
     await set(ref(db, `users/${player.uid}`), player)
   } else {
-    localStorage.setItem(LOCAL_PREFIX + player.uid, JSON.stringify(player))
+    try {
+      localStorage.setItem(LOCAL_PREFIX + player.uid, JSON.stringify(player))
+    } catch {
+      // Ignore storage failures (private mode / quota exceeded).
+    }
   }
 }
 
@@ -24,8 +28,13 @@ export async function loadPlayer(uid: string): Promise<PlayerState | null> {
     const snap = await get(child(ref(db), `users/${uid}`))
     return snap.exists() ? (snap.val() as PlayerState) : null
   }
-  const raw = localStorage.getItem(LOCAL_PREFIX + uid)
-  return raw ? (JSON.parse(raw) as PlayerState) : null
+  try {
+    const raw = localStorage.getItem(LOCAL_PREFIX + uid)
+    return raw ? (JSON.parse(raw) as PlayerState) : null
+  } catch {
+    // Corrupt / legacy local save — treat as no save so setup re-runs.
+    return null
+  }
 }
 
 export async function saveLeaderboardEntry(entry: LeaderboardEntry): Promise<void> {

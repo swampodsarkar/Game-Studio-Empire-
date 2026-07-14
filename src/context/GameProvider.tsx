@@ -450,6 +450,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setPlayer(migrated)
       }
       setLoading(false)
+    }).catch(() => {
+      if (!cancelled) setLoading(false)
     })
     return () => {
       cancelled = true
