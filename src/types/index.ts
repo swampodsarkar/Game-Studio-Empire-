@@ -196,6 +196,9 @@ export interface GameProject {
   // YouTube trailer released during development (free, once per game) — used to
   // gauge audience interest and give a small hype bump.
   trailer?: { views: number; likes: number; releasedAt: number }
+  // Cancelled from active management but still building in the background — it
+  // will finish and release automatically on its original schedule.
+  cancelled?: boolean
   // Post-launch support.
   bugs?: number
   patches?: number

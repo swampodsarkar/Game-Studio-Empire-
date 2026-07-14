@@ -812,6 +812,34 @@ export function GameProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  // Cancel a game from active management. It is NOT destroyed — it keeps
+  // building in the background and releases automatically on its original
+  // schedule, so the time and money already invested are not wasted.
+  const cancelGame = useCallback((gameId: string) => {
+    setPlayer((p) => {
+      if (!p) return p
+      const g = p.games.find((x) => x.id === gameId)
+      if (!g || g.released) return p
+      return withNotes(
+        { ...p, games: p.games.map((x) => (x.id === gameId ? { ...x, cancelled: true } : x)) },
+        mkNote({
+          title: '🗑 Removed from development',
+          body: `${g.name} is no longer actively managed, but it will still finish and release on its own.`,
+          type: 'info',
+        }),
+      )
+    })
+  }, [])
+
+  const resumeGame = useCallback((gameId: string) => {
+    setPlayer((p) => {
+      if (!p) return p
+      const g = p.games.find((x) => x.id === gameId)
+      if (!g || g.released) return p
+      return { ...p, games: p.games.map((x) => (x.id === gameId ? { ...x, cancelled: false } : x)) }
+    })
+  }, [])
+
   const patchGame = useCallback((gameId: string) => {
     setPlayer((p) => {
       if (!p) return p
@@ -1339,6 +1367,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     giveVacation,
     runCampaign,
     releaseTrailer,
+    cancelGame,
+    resumeGame,
     patchGame,
     releaseDLC,
     buyUpgrade,

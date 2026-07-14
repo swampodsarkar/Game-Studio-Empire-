@@ -55,6 +55,8 @@ export interface GameContextValue {
   giveVacation: (id: string) => void
   runCampaign: (gameId: string, campaignId: string) => void
   releaseTrailer: (gameId: string) => void
+  cancelGame: (gameId: string) => void
+  resumeGame: (gameId: string) => void
   patchGame: (gameId: string) => void
   releaseDLC: (gameId: string) => void
   buyUpgrade: (id: string) => boolean
