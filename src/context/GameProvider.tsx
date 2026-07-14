@@ -29,6 +29,7 @@ import {
   computeCompanyRating,
   computeSales,
   computeStudioValue,
+  engineUpgradeCost,
   getEngineStats,
   salaryBurn,
   upgradeEffect,
@@ -46,7 +47,7 @@ import { generateMissions, loginRewardForStreak } from '../lib/missions'
 import { generateEvent } from '../lib/events'
 import { createInitialPlayer } from '../lib/initialState'
 import { loadPlayer, saveLeaderboardEntry, savePlayer } from '../repository'
-import { clamp, pick, formatMoney, formatNumber } from '../lib/format'
+import { clamp, pick, randInt, formatMoney, formatNumber } from '../lib/format'
 import {
   CAMPAIGNS,
   DIFFICULTY,
@@ -908,6 +909,33 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [],
   )
 
+  const upgradeEngine = useCallback((engineId: string) => {
+    setPlayer((p) => {
+      if (!p) return p
+      const engine = p.engines.find((e) => e.id === engineId)
+      if (!engine) return p
+      const cost = engineUpgradeCost(engine.version)
+      if (p.money < cost) {
+        return withNotes(p, mkNote({ title: 'Not enough cash', body: `Engine upgrade costs ${formatMoney(cost)}.`, type: 'warning' }))
+      }
+      const bump = (v: number) => Math.min(100, v + randInt(6, 12))
+      const upgraded: CustomEngine = {
+        ...engine,
+        graphics: bump(engine.graphics),
+        physics: bump(engine.physics),
+        ai: bump(engine.ai),
+        networking: bump(engine.networking),
+        optimization: bump(engine.optimization),
+        tools: bump(engine.tools),
+        version: engine.version + 1,
+      }
+      return withNotes(
+        { ...p, money: p.money - cost, engines: p.engines.map((e) => (e.id === engineId ? upgraded : e)) },
+        mkNote({ title: `⚙️ ${engine.name} upgraded`, body: `Now v${upgraded.version} — your games will be sharper.`, type: 'success' }),
+      )
+    })
+  }, [])
+
   const claimLoginReward = useCallback((): number => {
     let reward = 0
     setPlayer((p) => {
@@ -1243,6 +1271,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     buyUpgrade,
     researchNode,
     createEngine,
+    upgradeEngine,
     claimLoginReward,
     notify,
     markNotificationsRead,

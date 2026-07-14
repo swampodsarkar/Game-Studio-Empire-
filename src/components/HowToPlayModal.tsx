@@ -67,7 +67,7 @@ const TABS = [
           <ul className="mt-1 list-disc space-y-1 pl-4 text-white/70">
             <li><b>Upgrades</b> — Office (more staff), Internet (faster dev), Computers (better graphics), etc.</li>
             <li><b>Research</b> — spend Research Points (earned weekly) to unlock tech bonuses</li>
-            <li><b>Custom Engine</b> — build your own engine for better game quality</li>
+            <li><b>Custom Engine</b> — build your own engine, upgrade it with cash to raise its stats, and pick which engine each new game uses</li>
           </ul>
         </div>
       </div>

@@ -30,6 +30,12 @@ export function upgradeEffect(upgrades: StudioUpgrade[], id: string): number {
   return def ? def.effect(lvl) : 1
 }
 
+// Cost to upgrade a custom engine scales with its current version, giving a
+// long-term money sink that steadily improves the games built on it.
+export function engineUpgradeCost(version: number): number {
+  return 3000 * Math.max(1, version)
+}
+
 // Returns engine stats for either a custom engine or the studio's built-in engine.
 export function getEngineStats(
   engine: CustomEngine | undefined,

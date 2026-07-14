@@ -15,7 +15,7 @@ import {
 } from '../config/gameConfig'
 import type { CustomEngine, EmployeeRole } from '../types'
 import { formatMoney } from '../lib/format'
-import { upgradeEffect, upgradeLevel } from '../lib/gameLogic'
+import { upgradeEffect, upgradeLevel, engineUpgradeCost } from '../lib/gameLogic'
 
 export function Studio() {
   const [tab, setTab] = useTabState('employees')
@@ -171,7 +171,7 @@ function Upgrades() {
 }
 
 function Engines() {
-  const { player, createEngine, licenseEngine } = useGame()
+  const { player, createEngine, upgradeEngine, licenseEngine } = useGame()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [stats, setStats] = useState({ graphics: 50, physics: 50, ai: 50, networking: 50, optimization: 50, tools: 50 })
@@ -205,6 +205,15 @@ function Engines() {
                     <StatBar key={k} value={e[k as keyof CustomEngine] as number} label={k} />
                   ))}
                 </div>
+                <Button
+                  size="sm"
+                  variant="success"
+                  className="mt-3 w-full"
+                  disabled={player.money < engineUpgradeCost(e.version)}
+                  onClick={() => upgradeEngine(e.id)}
+                >
+                  ⬆ Upgrade Engine ({formatMoney(engineUpgradeCost(e.version))})
+                </Button>
                 <div className="mt-3 rounded-lg bg-white/5 p-2 text-xs">
                   {rate > 0 ? (
                     <div className="flex items-center justify-between">

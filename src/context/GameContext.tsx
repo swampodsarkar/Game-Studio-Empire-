@@ -59,6 +59,7 @@ export interface GameContextValue {
   buyUpgrade: (id: string) => boolean
   researchNode: (id: string) => boolean
   createEngine: (name: string, stats: Omit<CustomEngine, 'id' | 'version' | 'licensedTo' | 'name'>) => void
+  upgradeEngine: (engineId: string) => void
   claimLoginReward: () => number
   notify: (n: Omit<Notification, 'id' | 'createdAt' | 'read'>) => void
   markNotificationsRead: () => void
