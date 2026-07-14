@@ -49,6 +49,7 @@ import { generateEvent } from '../lib/events'
 import { createInitialPlayer } from '../lib/initialState'
 import { loadPlayer, saveLeaderboardEntry, savePlayer } from '../repository'
 import { clamp, pick, rand, randInt, formatMoney, formatNumber } from '../lib/format'
+import { generateTrailerComments } from '../lib/youtube'
 import {
   CAMPAIGNS,
   DIFFICULTY,
@@ -517,6 +518,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
                       views: (g as unknown as { trailer: Trailer }).trailer.views,
                       likes: (g as unknown as { trailer: Trailer }).trailer.likes,
                       releasedAt: (g as unknown as { trailer: Trailer }).trailer.releasedAt,
+                      comments: [],
                     },
                   ]
                 : [],
@@ -845,7 +847,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const views = Math.round(reach * rand(0.6, 1.6))
       const likes = Math.round(views * rand(0.04, 0.16))
       const number = (g.trailers?.length ?? 0) + 1
-      const trailer: Trailer = { id: uid('tr'), title: `Trailer ${number}`, views, likes, releasedAt: Date.now() }
+      const trailer: Trailer = {
+        id: uid('tr'),
+        title: `Trailer ${number}`,
+        views,
+        likes,
+        releasedAt: Date.now(),
+        comments: generateTrailerComments(hype),
+      }
       return withNotes(
         {
           ...p,

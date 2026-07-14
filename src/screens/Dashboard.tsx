@@ -68,6 +68,11 @@ export function Dashboard() {
                       <span>{formatNumber(trailer.views)} views</span>
                       <span>{formatNumber(trailer.likes)} likes</span>
                     </div>
+                    {trailer.comments && trailer.comments.length > 0 && (
+                      <div className="mt-1 truncate text-[11px] text-white/40">
+                        💬 {trailer.comments[0].avatar} {trailer.comments[0].author}: {trailer.comments[0].text}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

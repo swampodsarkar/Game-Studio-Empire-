@@ -19,6 +19,7 @@ import {
 } from '../config/gameConfig'
 import type { PublishingDef } from '../config/gameConfig'
 import { clamp, pick, rand } from './format'
+import { generateUserReviews } from './reviews'
 
 export function upgradeLevel(upgrades: StudioUpgrade[], id: string): number {
   return upgrades.find((u) => u.id === id)?.level ?? 0
@@ -195,6 +196,7 @@ export function computeReview(
     criticScore: Math.round(criticScore),
     userScore: Math.round(userScore),
     comments,
+    userReviews: generateUserReviews(Math.round(userScore)),
   }
 }
 
