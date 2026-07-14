@@ -367,41 +367,47 @@ function GameDetail({ gameId }: { gameId: string }) {
       {!g.released ? (
         <div className="space-y-4">
           <StatBar value={Math.round(g.progress * 100)} color="#22d3ee" label={`${g.phase} progress`} />
-          <div>
-            <StatBar value={Math.round(g.hype ?? 0)} color="#f472b6" label="Hype" />
-            <div className="mb-2 mt-3 text-sm font-semibold text-white">🎬 YouTube Trailer</div>
-            {g.trailer ? (
-              <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm">
-                <div className="font-semibold text-white">{g.name} — Trailer is live</div>
-                <div className="mt-1 text-white/60">
-                  {formatNumber(g.trailer.views)} views · {formatNumber(g.trailer.likes)} likes
-                </div>
-                <div className="mt-1 text-[11px] text-white/40">Hype: {Math.round(g.hype ?? 0)}/100 — gauge interest before launch.</div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-3">
+              <StatBar value={Math.round(g.hype ?? 0)} color="#f472b6" label="Hype" />
+              <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                <div className="mb-2 text-sm font-semibold text-white">🎬 YouTube Trailer</div>
+                {g.trailer ? (
+                  <div className="text-sm">
+                    <div className="font-semibold text-white">{g.name} — Trailer is live</div>
+                    <div className="mt-1 text-white/60">
+                      {formatNumber(g.trailer.views)} views · {formatNumber(g.trailer.likes)} likes
+                    </div>
+                    <div className="mt-1 text-[11px] text-white/40">Hype: {Math.round(g.hype ?? 0)}/100 — gauge interest before launch.</div>
+                  </div>
+                ) : (
+                  <Button size="sm" variant="ghost" className="w-full" onClick={() => releaseTrailer(g.id)}>
+                    🎬 Release Trailer (free)
+                  </Button>
+                )}
               </div>
-            ) : (
-              <Button size="sm" variant="ghost" className="w-full" onClick={() => releaseTrailer(g.id)}>
-                🎬 Release Trailer (free)
-              </Button>
-            )}
-            <div className="mb-2 mt-4 text-sm font-semibold text-white">📣 Marketing Campaigns</div>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {CAMPAIGNS.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => runCampaign(g.id, c.id)}
-                  disabled={(player?.money ?? 0) < c.cost}
-                  className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-3 text-left transition hover:bg-white/10 disabled:opacity-40"
-                >
-                  <div>
-                    <div className="text-sm font-semibold text-white">{c.icon} {c.name}</div>
-                    <div className="text-[11px] text-white/50">{c.description}</div>
-                  </div>
-                  <div className="ml-2 text-right">
-                    <div className="text-xs font-bold text-accent-pink">+{c.hype}</div>
-                    <div className="text-[11px] text-white/50">{formatMoney(c.cost)}</div>
-                  </div>
-                </button>
-              ))}
+            </div>
+            <div>
+              <div className="mb-2 text-sm font-semibold text-white">📣 Marketing Campaigns</div>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {CAMPAIGNS.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => runCampaign(g.id, c.id)}
+                    disabled={(player?.money ?? 0) < c.cost}
+                    className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-3 text-left transition hover:bg-white/10 disabled:opacity-40"
+                  >
+                    <div>
+                      <div className="text-sm font-semibold text-white">{c.icon} {c.name}</div>
+                      <div className="text-[11px] text-white/50">{c.description}</div>
+                    </div>
+                    <div className="ml-2 text-right">
+                      <div className="text-xs font-bold text-accent-pink">+{c.hype}</div>
+                      <div className="text-[11px] text-white/50">{formatMoney(c.cost)}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

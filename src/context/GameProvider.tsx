@@ -791,7 +791,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return withNotes(p, mkNote({ title: 'Trailer already out', body: `${g.name} already has a trailer.`, type: 'info' }))
       }
       const hype = g.hype ?? 0
-      const reach = clamp(hype * 1800 + g.marketingBudget * 4 + 4000, 1000, 5_000_000)
+      const audience = p.fans
+      const reach = clamp(hype * 1500 + audience * 0.02 + g.marketingBudget * 3 + 3000, 1000, 8_000_000)
       const views = Math.round(reach * rand(0.6, 1.6))
       const likes = Math.round(views * rand(0.04, 0.16))
       return withNotes(
