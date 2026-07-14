@@ -269,7 +269,7 @@ export const UPGRADES: UpgradeDef[] = [
     baseCost: 2000,
     costGrowth: 1.7,
     maxLevel: 8,
-    effectLabel: (l) => `-${l * 2}% piracy`,
+    effectLabel: (l) => `-${l * 3}% piracy`,
     effect: (l) => 1 - l * 0.02,
   },
   {
@@ -302,7 +302,7 @@ export const UPGRADES: UpgradeDef[] = [
     baseCost: 3500,
     costGrowth: 1.7,
     maxLevel: 8,
-    effectLabel: (l) => `-${l * 3}% refunds`,
+    effectLabel: (l) => `-${Math.round(l * 0.8)}% refunds`,
     effect: (l) => 1 - l * 0.03,
   },
   {

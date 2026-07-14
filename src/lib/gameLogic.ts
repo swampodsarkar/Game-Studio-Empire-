@@ -283,12 +283,12 @@ export function computeSales(
   const monthly = Math.round(baseUnits * 0.32)
   const lifetime = Math.round(baseUnits * (4 + quality * 6))
 
-  const security = upgradeEffect(player.upgrades, 'security')
-  const piracyPct = clamp(0.28 * security, 0.02, 0.4)
+  const secLvl = upgradeLevel(player.upgrades, 'security')
+  const piracyPct = clamp(0.26 - secLvl * 0.03, 0.02, 0.3)
 
   const revenue = Math.round(lifetime * price * (1 - piracyPct) * publishing.revenueShare)
-  const qa = upgradeEffect(player.upgrades, 'qa')
-  const refundRate = clamp(0.07 * qa, 0.01, 0.07)
+  const qaLvl = upgradeLevel(player.upgrades, 'qa')
+  const refundRate = clamp(0.07 - qaLvl * 0.008, 0.005, 0.1)
   const refunds = Math.round(lifetime * refundRate)
   const refundCost = Math.round(refunds * price * 0.5)
 
