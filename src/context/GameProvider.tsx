@@ -163,8 +163,11 @@ function simulateOneWeek(
       const pub = PUBLISHING.find((x) => x.id === g.publishing) ?? PUBLISHING[0]
       const sales = computeSales(g, res.review, p, pub, franchiseMult)
       const bugs = computeBugs(g, p.employees, p.upgrades)
-      games[i] = { ...games[i], sales, bugs, weeksSinceRelease: 0 }
       const launchRevenue = Math.round((sales.launchDay / Math.max(1, sales.lifetime)) * sales.revenue * diff.revenueMult)
+      // Keep the displayed revenue-to-date in lockstep with the cash actually
+      // earned at launch (same multiplier), so it always reconciles with copies
+      // sold: revenueToDate ≈ sold * (revenue / lifetime).
+      games[i] = { ...games[i], sales: { ...sales, revenueToDate: launchRevenue }, bugs, weeksSinceRelease: 0 }
       money += launchRevenue
       const advance = Math.round(g.budget * pub.advanceMult)
       if (advance > 0) money += advance
@@ -433,6 +436,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
               ? g.platforms
               : [(g as unknown as { platform?: Platform }).platform ?? 'Steam'],
             tags: Array.isArray(g.tags) ? g.tags : [],
+            // Reconcile revenue-to-date with copies sold so legacy saves that
+            // drifted (launch multiplier / old DLC logic) display consistent
+            // numbers: revenueToDate ≈ sold * (revenue / lifetime).
+            sales: g.sales
+              ? {
+                  ...g.sales,
+                  revenueToDate: Math.round(
+                    ((g.sales.sold ?? g.sales.launchDay) / Math.max(1, g.sales.lifetime)) * g.sales.revenue,
+                  ),
+                }
+              : g.sales,
           })),
           employees: (Array.isArray(p.employees) ? p.employees : []).map((e) => ({
             ...e,
@@ -793,8 +807,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
                 weeksSinceRelease: Math.max(0, (x.weeksSinceRelease ?? 0) - 8),
                 sales: {
                   ...x.sales,
-                  // DLC revives the sales curve: more copies to sell + revenue.
-                  lifetime: Math.round(x.sales.lifetime * 1.25),
+                  // DLC revives the sales curve. Add the DLC's revenue AND the
+                  // equivalent number of extra copies to lifetime, so the
+                  // per-copy rate (revenue / lifetime) stays constant and the
+                  // "Revenue to date" panel keeps reconciling with copies sold.
+                  lifetime: x.sales.lifetime + Math.round(revenue / Math.max(1, x.sales.revenue / Math.max(1, x.sales.lifetime))),
                   revenue: x.sales.revenue + revenue,
                   revenueToDate: (x.sales.revenueToDate ?? 0) + revenue,
                 },
