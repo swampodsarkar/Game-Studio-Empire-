@@ -1,6 +1,6 @@
 import type { AIStudio, Genre } from '../types'
 import { GENRES } from '../config/gameConfig'
-import { randomStudioName } from './names'
+import { randomStudioName, randomPersonName } from './names'
 import { rand, randInt } from './format'
 
 export interface MarketTrends {
@@ -16,6 +16,7 @@ export function createMarket(): { studios: AIStudio[]; trends: MarketTrends } {
     studios.push({
       id: `ai_${i}`,
       name: randomStudioName(),
+      founder: randomPersonName(),
       value: randInt(50_000, 9_000_000),
       fans: randInt(500, 1_200_000),
       games: randInt(1, 40),

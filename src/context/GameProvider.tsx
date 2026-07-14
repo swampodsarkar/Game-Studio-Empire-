@@ -1137,6 +1137,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const startMoney = base.money
       const startFans = base.fans
       const startXpTotal = base.xp
+      // Rank immediately before this advance — used to show week-over-week
+      // up/down movement on the leaderboard.
+      const startRank = rankAmongStudios(curMarket.studios, curPlayer.studioValue).rank
 
       for (let i = 0; i < weeks; i++) {
         const r = simulateOneWeek(curPlayer, curMarket)
@@ -1155,7 +1158,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       playerRef.current = curPlayer
       marketRef.current = curMarket
       setMarket(curMarket)
-      setPlayer(curPlayer)
+      setPlayer({ ...curPlayer, lastRank: startRank })
       // Only surface the summary modal for multi-week fast-forwards.
       if (weeks > 1) {
         setWeeklyReport({

@@ -15,6 +15,7 @@ export function Leaderboard() {
       const ai: LeaderboardEntry[] = market.studios.slice(0, 80).map((s) => ({
         uid: s.id,
         username: s.name,
+        founder: s.founder,
         avatar: '🏢',
         studioValue: s.value,
         fans: s.fans,
@@ -26,6 +27,7 @@ export function Leaderboard() {
         all.push({
           uid: player.uid,
           username: player.username + ' (You)',
+          founder: 'Founded by you',
           avatar: player.avatar,
           studioValue: player.studioValue,
           fans: player.fans,
@@ -39,6 +41,19 @@ export function Leaderboard() {
   }, [market, player])
 
   if (!player) return null
+
+  const youRank = entries.findIndex((e) => e.uid === player.uid) + 1
+  const lastRank = player.lastRank
+  const delta =
+    lastRank == null ? 0 : youRank - lastRank
+
+  const trend = (e: LeaderboardEntry) => {
+    if (e.uid !== player.uid) return null
+    if (lastRank == null) return <span className="text-white/40">NEW</span>
+    if (delta < 0) return <span className="text-accent-green font-bold">▲ {Math.abs(delta)}</span>
+    if (delta > 0) return <span className="text-red-400 font-bold">▼ {delta}</span>
+    return <span className="text-white/40">–</span>
+  }
 
   return (
     <div>
@@ -57,6 +72,7 @@ export function Leaderboard() {
                 <th className="p-3 text-right">Level</th>
                 <th className="p-3 text-right">Fans</th>
                 <th className="p-3 text-right">Value</th>
+                <th className="p-3 text-right">Trend</th>
               </tr>
             </thead>
             <tbody>
@@ -71,11 +87,15 @@ export function Leaderboard() {
                     <td className="p-3">
                       <span className="mr-2">{e.avatar}</span>
                       <span className="font-semibold text-white">{e.username}</span>
+                      {e.founder && (
+                        <div className="text-xs text-white/40">{e.founder}</div>
+                      )}
                     </td>
                     <td className="p-3 text-white/60">{e.country}</td>
                     <td className="p-3 text-right text-white/70">{e.level}</td>
                     <td className="p-3 text-right text-white/70">{formatNumber(e.fans)}</td>
                     <td className="p-3 text-right font-bold text-accent-green">{formatMoney(e.studioValue)}</td>
+                    <td className="p-3 text-right text-xs">{trend(e)}</td>
                   </tr>
                 )
               })}

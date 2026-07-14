@@ -277,6 +277,7 @@ export interface Mission {
 export interface AIStudio {
   id: string
   name: string
+  founder: string
   value: number
   fans: number
   games: number
@@ -336,6 +337,7 @@ export interface PlayerState {
   missions: Mission[]
   lastLogin: number
   streak: number
+  lastRank?: number
   employees: Employee[]
   games: GameProject[]
   engines: CustomEngine[]
@@ -369,4 +371,5 @@ export interface LeaderboardEntry {
   fans: number
   level: number
   country: string
+  founder?: string
 }
