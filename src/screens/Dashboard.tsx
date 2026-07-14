@@ -13,6 +13,11 @@ export function Dashboard() {
 
   const active = player.games.filter((g) => !g.released)
   const released = player.games.filter((g) => g.released)
+  const trailers = player.games
+    .filter((g) => g.trailer)
+    .sort((a, b) => (b.trailer?.views ?? 0) - (a.trailer?.views ?? 0))
+  const totalViews = trailers.reduce((s, g) => s + (g.trailer?.views ?? 0), 0)
+  const totalLikes = trailers.reduce((s, g) => s + (g.trailer?.likes ?? 0), 0)
 
   return (
     <div className="space-y-5">
@@ -40,6 +45,34 @@ export function Dashboard() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
+          <GlassCard glow>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-pixel text-[11px] uppercase text-accent-red">🎬 YouTube</h3>
+              <span className="font-mono-game text-base text-white/40">{formatNumber(totalViews)} views · {formatNumber(totalLikes)} likes</span>
+            </div>
+            {trailers.length === 0 ? (
+              <p className="text-sm text-white/40">No trailers yet. Release one in Game Dev to grow your channel.</p>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {trailers.map((g) => (
+                  <div key={g.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">▶️</span>
+                      <div className="min-w-0">
+                        <div className="truncate font-semibold text-white">{g.name}</div>
+                        <div className="text-[11px] text-white/40">{g.released ? 'Released' : 'In dev'} · hype {Math.round(g.hype ?? 0)}/100</div>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex justify-between text-xs text-white/60">
+                      <span>{formatNumber(g.trailer?.views ?? 0)} views</span>
+                      <span>{formatNumber(g.trailer?.likes ?? 0)} likes</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </GlassCard>
+
           <GlassCard>
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-lg font-bold text-white">In Development</h3>
