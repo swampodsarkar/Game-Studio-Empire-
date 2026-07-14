@@ -193,6 +193,9 @@ export interface GameProject {
   // Marketing hype accumulated during development (0..100).
   hype?: number
   campaigns?: string[]
+  // YouTube trailer released during development (free, once per game) — used to
+  // gauge audience interest and give a small hype bump.
+  trailer?: { views: number; likes: number; releasedAt: number }
   // Post-launch support.
   bugs?: number
   patches?: number

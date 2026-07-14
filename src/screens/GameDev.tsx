@@ -317,7 +317,7 @@ function GameLibrary() {
 }
 
 function GameDetail({ gameId }: { gameId: string }) {
-  const { player, createGame, notify, runCampaign, patchGame, releaseDLC } = useGame()
+  const { player, createGame, notify, runCampaign, releaseTrailer, patchGame, releaseDLC } = useGame()
   const g = player?.games.find((x) => x.id === gameId)
   if (!g) return null
   const bugs = g.bugs ?? 0
@@ -369,7 +369,21 @@ function GameDetail({ gameId }: { gameId: string }) {
           <StatBar value={Math.round(g.progress * 100)} color="#22d3ee" label={`${g.phase} progress`} />
           <div>
             <StatBar value={Math.round(g.hype ?? 0)} color="#f472b6" label="Hype" />
-            <div className="mb-2 mt-3 text-sm font-semibold text-white">📣 Marketing Campaigns</div>
+            <div className="mb-2 mt-3 text-sm font-semibold text-white">🎬 YouTube Trailer</div>
+            {g.trailer ? (
+              <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm">
+                <div className="font-semibold text-white">{g.name} — Trailer is live</div>
+                <div className="mt-1 text-white/60">
+                  {formatNumber(g.trailer.views)} views · {formatNumber(g.trailer.likes)} likes
+                </div>
+                <div className="mt-1 text-[11px] text-white/40">Hype: {Math.round(g.hype ?? 0)}/100 — gauge interest before launch.</div>
+              </div>
+            ) : (
+              <Button size="sm" variant="ghost" className="w-full" onClick={() => releaseTrailer(g.id)}>
+                🎬 Release Trailer (free)
+              </Button>
+            )}
+            <div className="mb-2 mt-4 text-sm font-semibold text-white">📣 Marketing Campaigns</div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {CAMPAIGNS.map((c) => (
                 <button

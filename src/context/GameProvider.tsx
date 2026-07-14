@@ -47,7 +47,7 @@ import { generateMissions, loginRewardForStreak } from '../lib/missions'
 import { generateEvent } from '../lib/events'
 import { createInitialPlayer } from '../lib/initialState'
 import { loadPlayer, saveLeaderboardEntry, savePlayer } from '../repository'
-import { clamp, pick, randInt, formatMoney, formatNumber } from '../lib/format'
+import { clamp, pick, rand, randInt, formatMoney, formatNumber } from '../lib/format'
 import {
   CAMPAIGNS,
   DIFFICULTY,
@@ -183,6 +183,19 @@ function simulateOneWeek(
         body: `Review score: ${res.review.score}/100. Launch day units: ${sales.launchDay.toLocaleString()}.${advance > 0 ? ` Advance: $${advance}.` : ''}`,
         type: 'success',
       })
+      // Surface the actual critic reviews in the feed so the player can read
+      // what reviewers thought and gauge how the game is landing.
+      const criticQuotes = (res.review.comments ?? [])
+        .slice(0, 3)
+        .map((c) => `${c.author} (${c.score}): "${c.text}"`)
+        .join('   ')
+      if (criticQuotes) {
+        addNote({
+          title: `📝 What critics said about ${g.name}`,
+          body: criticQuotes,
+          type: 'info',
+        })
+      }
       if (bugs > 6) {
         addNote({
           title: `🐛 ${g.name} shipped with bugs`,
@@ -766,6 +779,39 @@ export function GameProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  // Release a YouTube trailer during development. Free, once per game — it
+  // shows how much organic interest the project has built (views/likes) and
+  // gives a small hype bump that carries into the launch sales curve.
+  const releaseTrailer = useCallback((gameId: string) => {
+    setPlayer((p) => {
+      if (!p) return p
+      const g = p.games.find((x) => x.id === gameId)
+      if (!g || g.released) return p
+      if (g.trailer) {
+        return withNotes(p, mkNote({ title: 'Trailer already out', body: `${g.name} already has a trailer.`, type: 'info' }))
+      }
+      const hype = g.hype ?? 0
+      const reach = clamp(hype * 1800 + g.marketingBudget * 4 + 4000, 1000, 5_000_000)
+      const views = Math.round(reach * rand(0.6, 1.6))
+      const likes = Math.round(views * rand(0.04, 0.16))
+      return withNotes(
+        {
+          ...p,
+          games: p.games.map((x) =>
+            x.id === gameId
+              ? { ...x, hype: clamp(hype + 10, 0, 100), trailer: { views, likes, releasedAt: Date.now() } }
+              : x,
+          ),
+        },
+        mkNote({
+          title: `🎬 YouTube trailer live!`,
+          body: `${g.name}: ${views.toLocaleString()} views · ${likes.toLocaleString()} likes. Hype is building!`,
+          type: 'success',
+        }),
+      )
+    })
+  }, [])
+
   const patchGame = useCallback((gameId: string) => {
     setPlayer((p) => {
       if (!p) return p
@@ -1292,6 +1338,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     giveRaise,
     giveVacation,
     runCampaign,
+    releaseTrailer,
     patchGame,
     releaseDLC,
     buyUpgrade,
