@@ -60,5 +60,5 @@ export function tickMarketGames(games: MarketGame[], week: number): MarketGame[]
 
   let next = kept.filter((g) => g.heat > 12 || g.appearedWeek > week - 20)
   while (next.length < MAX_MARKET_GAMES) next.push(makeMarketGame(week))
-  return next.slice(0, MAX_MARKET_GAMES + 4)
+  return next.slice(0, MAX_MARKET_GAMES)
 }

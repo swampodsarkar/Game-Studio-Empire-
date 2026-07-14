@@ -391,7 +391,7 @@ function GameDetail({ gameId }: { gameId: string }) {
             </div>
           </div>
         </div>
-      ) : (
+      ) : g.sales ? (
         <>
           <div className="rounded-xl bg-white/5 p-4">
             <div className="mb-2 text-lg font-bold text-white">Review: {g.review?.score}/100</div>
@@ -467,7 +467,7 @@ function GameDetail({ gameId }: { gameId: string }) {
           {g.isSequel && <div className="text-xs text-accent-cyan">🔗 This is a sequel — it benefits from the franchise's fanbase.</div>}
           <Button variant="ghost" onClick={makeSequel}>🎬 Make Sequel</Button>
         </>
-      )}
+      ) : null}
     </div>
   )
 }
