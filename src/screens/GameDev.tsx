@@ -273,17 +273,15 @@ function GameLibrary() {
         <GlassCard key={g.id} className="cursor-pointer overflow-hidden p-0" onClick={() => setOpenId(g.id)}>
           <div className="relative">
             <GameCover game={g} className="rounded-none" />
-              <span
-                className={`chip absolute bottom-2 right-2 backdrop-blur-sm ${
-                  g.released
-                    ? 'border-accent-green/40 bg-black/40 text-accent-green'
-                    : g.cancelled
-                      ? 'border-accent-amber/40 bg-black/40 text-accent-amber'
-                      : 'border-accent-cyan/40 bg-black/40 text-accent-cyan'
-                }`}
-              >
-                {g.released ? 'Released' : g.cancelled ? '🔨 Building' : g.phase}
-              </span>
+            <span
+              className={`chip absolute bottom-2 right-2 backdrop-blur-sm ${
+                g.released
+                  ? 'border-accent-green/40 bg-black/40 text-accent-green'
+                  : 'border-accent-cyan/40 bg-black/40 text-accent-cyan'
+              }`}
+            >
+              {g.released ? 'Released' : g.phase}
+            </span>
           </div>
           <div className="p-4 pt-3">
           <div className="text-xs text-white/50">{g.platforms.join(', ')}</div>
@@ -319,7 +317,7 @@ function GameLibrary() {
 }
 
 function GameDetail({ gameId }: { gameId: string }) {
-  const { player, createGame, notify, runCampaign, releaseTrailer, cancelGame, resumeGame, patchGame, releaseDLC } = useGame()
+  const { player, createGame, notify, runCampaign, releaseTrailer, patchGame, releaseDLC } = useGame()
   const g = player?.games.find((x) => x.id === gameId)
   if (!g) return null
   const bugs = g.bugs ?? 0
@@ -367,59 +365,46 @@ function GameDetail({ gameId }: { gameId: string }) {
       </div>
 
       {!g.released ? (
-        g.cancelled ? (
-          <div className="space-y-4">
-            <StatBar value={Math.round(g.progress * 100)} color="#22d3ee" label={`${g.phase} progress`} />
-            <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-amber-100">
-              🔨 This game is no longer actively managed, but it keeps building in the background and will release automatically on its original schedule.
-            </div>
-            <Button size="sm" variant="ghost" className="w-full" onClick={() => resumeGame(g.id)}>↩ Resume management</Button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <StatBar value={Math.round(g.progress * 100)} color="#22d3ee" label={`${g.phase} progress`} />
-            <div className="flex justify-end">
-              <Button size="sm" variant="danger" onClick={() => cancelGame(g.id)}>🗑 Cancel (keep building)</Button>
-            </div>
-            <div>
-              <StatBar value={Math.round(g.hype ?? 0)} color="#f472b6" label="Hype" />
-              <div className="mb-2 mt-3 text-sm font-semibold text-white">🎬 YouTube Trailer</div>
-              {g.trailer ? (
-                <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm">
-                  <div className="font-semibold text-white">{g.name} — Trailer is live</div>
-                  <div className="mt-1 text-white/60">
-                    {formatNumber(g.trailer.views)} views · {formatNumber(g.trailer.likes)} likes
-                  </div>
-                  <div className="mt-1 text-[11px] text-white/40">Hype: {Math.round(g.hype ?? 0)}/100 — gauge interest before launch.</div>
+        <div className="space-y-4">
+          <StatBar value={Math.round(g.progress * 100)} color="#22d3ee" label={`${g.phase} progress`} />
+          <div>
+            <StatBar value={Math.round(g.hype ?? 0)} color="#f472b6" label="Hype" />
+            <div className="mb-2 mt-3 text-sm font-semibold text-white">🎬 YouTube Trailer</div>
+            {g.trailer ? (
+              <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm">
+                <div className="font-semibold text-white">{g.name} — Trailer is live</div>
+                <div className="mt-1 text-white/60">
+                  {formatNumber(g.trailer.views)} views · {formatNumber(g.trailer.likes)} likes
                 </div>
-              ) : (
-                <Button size="sm" variant="ghost" className="w-full" onClick={() => releaseTrailer(g.id)}>
-                  🎬 Release Trailer (free)
-                </Button>
-              )}
-              <div className="mb-2 mt-4 text-sm font-semibold text-white">📣 Marketing Campaigns</div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {CAMPAIGNS.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => runCampaign(g.id, c.id)}
-                    disabled={(player?.money ?? 0) < c.cost}
-                    className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-3 text-left transition hover:bg-white/10 disabled:opacity-40"
-                  >
-                    <div>
-                      <div className="text-sm font-semibold text-white">{c.icon} {c.name}</div>
-                      <div className="text-[11px] text-white/50">{c.description}</div>
-                    </div>
-                    <div className="ml-2 text-right">
-                      <div className="text-xs font-bold text-accent-pink">+{c.hype}</div>
-                      <div className="text-[11px] text-white/50">{formatMoney(c.cost)}</div>
-                    </div>
-                  </button>
-                ))}
+                <div className="mt-1 text-[11px] text-white/40">Hype: {Math.round(g.hype ?? 0)}/100 — gauge interest before launch.</div>
               </div>
+            ) : (
+              <Button size="sm" variant="ghost" className="w-full" onClick={() => releaseTrailer(g.id)}>
+                🎬 Release Trailer (free)
+              </Button>
+            )}
+            <div className="mb-2 mt-4 text-sm font-semibold text-white">📣 Marketing Campaigns</div>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {CAMPAIGNS.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => runCampaign(g.id, c.id)}
+                  disabled={(player?.money ?? 0) < c.cost}
+                  className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-3 text-left transition hover:bg-white/10 disabled:opacity-40"
+                >
+                  <div>
+                    <div className="text-sm font-semibold text-white">{c.icon} {c.name}</div>
+                    <div className="text-[11px] text-white/50">{c.description}</div>
+                  </div>
+                  <div className="ml-2 text-right">
+                    <div className="text-xs font-bold text-accent-pink">+{c.hype}</div>
+                    <div className="text-[11px] text-white/50">{formatMoney(c.cost)}</div>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
-        )
+        </div>
       ) : g.sales ? (
         <>
           <div className="rounded-xl bg-white/5 p-4">
