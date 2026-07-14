@@ -317,6 +317,8 @@ export interface GameEvent {
   choices: GameEventChoice[]
 }
 
+export type Difficulty = 'easy' | 'medium' | 'hard'
+
 export interface PlayerState {
   uid: string
   username: string
@@ -350,6 +352,7 @@ export interface PlayerState {
     studioValue: number[]
     weeks: number[]
   }
+  difficulty: Difficulty
   createdAt: number
   // transient / derived tracking (also persisted for convenience)
   _rp?: number

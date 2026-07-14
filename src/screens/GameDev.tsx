@@ -46,6 +46,8 @@ function CreateGameForm() {
   const { player, createGame } = useGame()
   const [name, setName] = useState('')
   const [genre, setGenre] = useState<Genre>('RPG')
+  const [genreSearch, setGenreSearch] = useState('')
+  const [genreOpen, setGenreOpen] = useState(false)
   const [theme, setTheme] = useState<Theme>('Fantasy')
   const [platforms, setPlatforms] = useState<Platform[]>(['Steam'])
   const [engineId, setEngineId] = useState<string>('builtin')
@@ -119,13 +121,28 @@ function CreateGameForm() {
             ))}
           </select>
         </div>
-        <div>
+        <div className="relative">
           <label className="label">Genre</label>
-          <select className="input" value={genre} onChange={(e) => setGenre(e.target.value as Genre)}>
-            {GENRES.map((g) => (
-              <option key={g} value={g} className="bg-ink-800">{g}</option>
-            ))}
-          </select>
+          <input
+            className="input"
+            value={genreOpen ? genreSearch : genre}
+            onChange={(e) => { setGenreSearch(e.target.value); setGenreOpen(true) }}
+            onFocus={() => { setGenreSearch(''); setGenreOpen(true) }}
+            placeholder="Search genres..."
+          />
+          {genreOpen && (
+            <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-44 overflow-y-auto rounded-xl border border-white/10 bg-ink-800 p-1 shadow-xl scrollbar-thin">
+              {GENRES.filter((g) => g.toLowerCase().includes(genreSearch.toLowerCase())).map((g) => (
+                <button
+                  key={g}
+                  className={`w-full rounded-lg px-3 py-1.5 text-left text-sm transition ${genre === g ? 'bg-brand-500/30 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
+                  onClick={() => { setGenre(g); setGenreOpen(false) }}
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div>
           <label className="label">Theme</label>
@@ -222,6 +239,7 @@ function CreateGameForm() {
 function GameLibrary() {
   const { player } = useGame()
   const [openId, setOpenId] = useState<string | null>(null)
+  const [filter, setFilter] = useState<'all' | 'dev' | 'released'>('all')
   if (!player) return null
   const game = player.games.find((g) => g.id === openId)
 
@@ -229,9 +247,29 @@ function GameLibrary() {
     return <GlassCard><p className="text-sm text-white/40">No games yet. Create your first masterpiece!</p></GlassCard>
   }
 
+  const filtered = player.games.filter((g) => {
+    if (filter === 'dev') return !g.released
+    if (filter === 'released') return g.released
+    return true
+  })
+
   return (
-    <div className="max-h-[64vh] grid gap-3 overflow-y-auto scrollbar-thin pr-1 md:grid-cols-2 lg:grid-cols-3">
-      {player.games.map((g) => (
+    <div>
+      <div className="mb-3 flex gap-2">
+        {(['all', 'dev', 'released'] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+              filter === f ? 'bg-brand-500 text-white' : 'bg-white/5 text-white/50 hover:bg-white/10'
+            }`}
+          >
+            {f === 'all' ? 'All' : f === 'dev' ? 'In Development' : 'Released'} ({f === 'all' ? player.games.length : player.games.filter((g) => f === 'dev' ? !g.released : g.released).length})
+          </button>
+        ))}
+      </div>
+      <div className="max-h-[58vh] grid gap-3 overflow-y-auto scrollbar-thin pr-1 md:grid-cols-2 lg:grid-cols-3">
+      {filtered.map((g) => (
         <GlassCard key={g.id} className="cursor-pointer overflow-hidden p-0" onClick={() => setOpenId(g.id)}>
           <div className="relative">
             <GameCover game={g} className="rounded-none" />
@@ -269,6 +307,7 @@ function GameLibrary() {
           </div>
         </GlassCard>
       ))}
+      </div>
 
       <Modal open={!!game} onClose={() => setOpenId(null)} title={game?.name} maxWidth="max-w-2xl">
         {game && <GameDetail gameId={game.id} />}

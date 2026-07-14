@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react'
 import type {
   AIStudio,
   CustomEngine,
+  Difficulty,
   Employee,
   EmployeeRole,
   Genre,
@@ -63,7 +64,7 @@ export interface GameContextValue {
   markNotificationsRead: () => void
   clearNotifications: () => void
   resetGame: () => void
-  setupProfile: (username: string, avatar: string, country: string) => void
+  setupProfile: (username: string, avatar: string, country: string, difficulty?: Difficulty) => void
   setAvatar: (avatar: string) => void
   setCountry: (country: string) => void
   takeLoan: (amount: number) => void

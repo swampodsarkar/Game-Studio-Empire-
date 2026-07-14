@@ -42,6 +42,7 @@ export function Studio() {
 function Employees() {
   const { player, hireEmployee, fireEmployee, trainEmployee, promoteEmployee, giveRaise, giveVacation } = useGame()
   const [hireOpen, setHireOpen] = useState(false)
+  const [fireId, setFireId] = useState<string | null>(null)
   if (!player) return null
   const maxEmp = upgradeEffect(player.upgrades, 'office')
   const officeLvl = upgradeLevel(player.upgrades, 'office')
@@ -85,7 +86,7 @@ function Employees() {
                 <Button size="sm" variant="ghost" onClick={() => promoteEmployee(e.id)}>Promote</Button>
                 <Button size="sm" variant="success" onClick={() => giveRaise(e.id)}>💸 Raise</Button>
                 <Button size="sm" variant="success" onClick={() => giveVacation(e.id)}>🌴 Time Off</Button>
-                <Button size="sm" variant="danger" onClick={() => fireEmployee(e.id)}>Fire</Button>
+                <Button size="sm" variant="danger" onClick={() => setFireId(e.id)}>Fire</Button>
               </div>
             )}
           </GlassCard>
@@ -109,6 +110,26 @@ function Employees() {
         <p className="mt-3 text-xs text-white/40">
           Candidates are generated with random skill and salary based on role. Office level limits headcount.
         </p>
+      </Modal>
+
+      <Modal open={!!fireId} onClose={() => setFireId(null)} title="Fire Employee?" maxWidth="max-w-sm">
+        <p className="text-sm text-white/70">
+          {fireId
+            ? `Are you sure you want to fire ${player.employees.find((e) => e.id === fireId)?.name ?? 'this employee'}? This cannot be undone.`
+            : ''}
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <button onClick={() => setFireId(null)} className="btn-game px-4 py-2 text-sm">Cancel</button>
+          <button
+            onClick={() => {
+              if (fireId) fireEmployee(fireId)
+              setFireId(null)
+            }}
+            className="btn-game px-4 py-2 text-sm !border-accent-pink/60"
+          >
+            Yes, fire
+          </button>
+        </div>
       </Modal>
     </div>
   )

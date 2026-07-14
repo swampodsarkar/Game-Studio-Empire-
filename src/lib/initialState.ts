@@ -1,4 +1,4 @@
-import type { PlayerState } from '../types'
+import type { Difficulty, PlayerState } from '../types'
 import { STARTING_MONEY } from '../config/gameConfig'
 import { generateMissions } from './missions'
 
@@ -7,12 +7,14 @@ export function createInitialPlayer(
   username: string,
   avatar: string,
   country: string,
+  difficulty: Difficulty = 'medium',
 ): PlayerState {
   return {
     uid,
     username,
     avatar,
     country,
+    difficulty,
     level: 1,
     xp: 0,
     money: STARTING_MONEY,

@@ -5,6 +5,7 @@ import type {
   AIStudio,
   AwardRecord,
   CustomEngine,
+  Difficulty,
   Employee,
   EmployeeRole,
   GameProject,
@@ -48,6 +49,7 @@ import { loadPlayer, saveLeaderboardEntry, savePlayer } from '../repository'
 import { clamp, pick, formatMoney, formatNumber } from '../lib/format'
 import {
   CAMPAIGNS,
+  DIFFICULTY,
   OFFICE_BASE_RENT,
   OFFICE_RENT_PER_HEAD,
   OFFICE_RENT_PER_LEVEL,
@@ -96,6 +98,7 @@ function simulateOneWeek(
   p: PlayerState,
   market: MarketSnapshot,
 ): { player: PlayerState; market: MarketSnapshot; notes: Notification[] } {
+  const diff = DIFFICULTY[p.difficulty ?? 'medium']
   let money = p.money
   let fans = p.fans
   let xp = p.xp
@@ -103,11 +106,12 @@ function simulateOneWeek(
   const notifications: Notification[] = []
   const awards: AwardRecord[] = [...p.awards]
   let seasonXpGain = 0
+  const shippedMembers = new Set<string>()
   const addNote = (n: Omit<Notification, 'id' | 'createdAt' | 'read'>) =>
     notifications.push({ ...n, id: uid('n'), createdAt: Date.now(), read: false })
 
-  // Pay salaries.
-  money -= salaryBurn(p)
+  // Pay salaries (adjusted for difficulty).
+  money -= Math.round(salaryBurn(p) * diff.expenseMult)
 
   // Earn research points.
   let rp = (p._rp ?? 0) + weeklyResearchPoints(p)
@@ -131,7 +135,7 @@ function simulateOneWeek(
           let units = Math.max(0, Math.round(rawUnits * bugPenalty))
           units = Math.min(units, g.sales.lifetime - sold)
           const perUnit = g.sales.revenue / Math.max(1, g.sales.lifetime)
-          const weekRevenue = Math.round(units * perUnit)
+          const weekRevenue = Math.round(units * perUnit * diff.revenueMult)
           money += weekRevenue
           fans += Math.round(g.sales.fansGained * 0.05 * bugPenalty)
           if ((g.bugs ?? 0) > 6) fans -= Math.round((g.bugs ?? 0) * 8)
@@ -160,7 +164,7 @@ function simulateOneWeek(
       const sales = computeSales(g, res.review, p, pub, franchiseMult)
       const bugs = computeBugs(g, p.employees, p.upgrades)
       games[i] = { ...games[i], sales, bugs, weeksSinceRelease: 0 }
-      const launchRevenue = Math.round((sales.launchDay / Math.max(1, sales.lifetime)) * sales.revenue)
+      const launchRevenue = Math.round((sales.launchDay / Math.max(1, sales.lifetime)) * sales.revenue * diff.revenueMult)
       money += launchRevenue
       const advance = Math.round(g.budget * pub.advanceMult)
       if (advance > 0) money += advance
@@ -182,6 +186,8 @@ function simulateOneWeek(
           type: 'warning',
         })
       }
+      // Team members gain experience from shipping.
+      g.teamMemberIds.forEach((id) => shippedMembers.add(id))
       if (res.review.score >= 70) {
         const yr = 2025 + Math.floor(p.week / 52)
         const cats = ['best_game']
@@ -233,7 +239,8 @@ function simulateOneWeek(
       energy = clamp(energy + 16, 0, 100)
       mood = clamp(mood + 5 + (comfort - 1) * 20, 0, 100)
     }
-    return { ...e, energy, mood }
+    const shippedBonus = shippedMembers.has(e.id) ? Math.round(e.skill < 80 ? 0.75 : 0.3) : 0
+    return { ...e, energy, mood, skill: Math.min(100, e.skill + shippedBonus), experience: e.experience + (shippedBonus > 0 ? 1 : 0) }
   })
 
   // Resignations: badly burnt-out staff (never the founder) may quit.
@@ -258,7 +265,7 @@ function simulateOneWeek(
   // Office rent scales with office size and headcount.
   const officeLvl = upgradeLevel(p.upgrades, 'office')
   const rent = OFFICE_BASE_RENT + officeLvl * OFFICE_RENT_PER_LEVEL + employees.length * OFFICE_RENT_PER_HEAD
-  money -= rent
+  money -= Math.round(rent * diff.expenseMult)
 
   // Engine licensing royalties.
   for (const rate of Object.values(p.licenses)) money += Math.round(rate * 200)
@@ -471,9 +478,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [player])
 
   const setupProfile = useCallback(
-    (username: string, avatar: string, country: string) => {
+    (username: string, avatar: string, country: string, difficulty: Difficulty = 'medium') => {
       if (!user) return
-      const initial = createInitialPlayer(user.uid, username, avatar, country)
+      const cfg = DIFFICULTY[difficulty]
+      const initial = createInitialPlayer(user.uid, username, avatar, country, difficulty)
+      initial.money = cfg.startMoney
+      initial.studioValue = cfg.startMoney
       setPlayer(initial)
     },
     [user],

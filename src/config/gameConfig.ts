@@ -341,6 +341,12 @@ export const RESEARCH_TREE: ResearchDef[] = [
 
 export const STARTING_MONEY = 5000
 
+export const DIFFICULTY: Record<string, { label: string; desc: string; revenueMult: number; expenseMult: number; startMoney: number }> = {
+  easy: { label: 'Easy', desc: '1.2x revenue, 0.8x expenses, start with $10K', revenueMult: 1.2, expenseMult: 0.8, startMoney: 10_000 },
+  medium: { label: 'Medium', desc: '1.0x revenue, 1.0x expenses, start with $5K', revenueMult: 1.0, expenseMult: 1.0, startMoney: 5_000 },
+  hard: { label: 'Hard', desc: '0.7x revenue, 1.3x expenses, start with $2K', revenueMult: 0.7, expenseMult: 1.3, startMoney: 2_000 },
+}
+
 export const COUNTRIES = [
   'USA', 'UK', 'Germany', 'Japan', 'Brazil', 'Canada', 'France',
   'South Korea', 'India', 'Australia', 'Spain', 'Sweden', 'Netherlands', 'Mexico',
