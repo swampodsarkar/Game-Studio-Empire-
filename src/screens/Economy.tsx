@@ -36,7 +36,7 @@ export function Economy() {
             </Button>
           </div>
           <p className="mt-3 text-xs text-white/40">
-            Loans accrue 2% interest weekly. Use them to fund big productions, but don't drown in debt!
+            Loans accrue 0.3% interest weekly. Use them to fund big productions, but don't drown in debt!
           </p>
         </GlassCard>
 

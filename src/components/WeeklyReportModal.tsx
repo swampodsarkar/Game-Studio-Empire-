@@ -11,7 +11,7 @@ export function WeeklyReportModal() {
     <Modal
       open={open}
       onClose={dismissWeeklyReport}
-      title={r ? `📅 Weekly Report — Weeks ${r.fromWeek + 1}–${r.toWeek}` : ''}
+      title={r ? `📅 Weekly Report — Weeks ${r.fromWeek}–${r.toWeek}` : ''}
     >
       {r && (
         <div className="space-y-4">
