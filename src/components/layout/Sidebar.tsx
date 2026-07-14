@@ -10,6 +10,7 @@ export type ScreenId =
   | 'analytics'
   | 'economy'
   | 'awards'
+  | 'season'
   | 'missions'
   | 'achievements'
   | 'leaderboard'
@@ -25,6 +26,7 @@ const NAV: { id: ScreenId; label: string; icon: IconName }[] = [
   { id: 'analytics', label: 'Analytics', icon: 'analytics' },
   { id: 'economy', label: 'Economy', icon: 'economy' },
   { id: 'awards', label: 'Awards', icon: 'awards' },
+  { id: 'season', label: 'Season', icon: 'season' },
   { id: 'missions', label: 'Missions', icon: 'missions' },
   { id: 'achievements', label: 'Achievements', icon: 'achievements' },
   { id: 'leaderboard', label: 'Rankings', icon: 'leaderboard' },

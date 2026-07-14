@@ -15,10 +15,11 @@ export function formatNumber(n: number): string {
 }
 
 export function formatDate(week: number): string {
-  // Game starts year 2025, week 1.
+  // Game starts year 2025, week 1 (48 weeks/year, 4 weeks/month).
   const startYear = 2025
-  const year = startYear + Math.floor((week - 1) / 52)
-  const wk = ((week - 1) % 52) + 1
+  const weeksPerYear = 48
+  const year = startYear + Math.floor((week - 1) / weeksPerYear)
+  const wk = ((week - 1) % weeksPerYear) + 1
   return `W${wk}, ${year}`
 }
 

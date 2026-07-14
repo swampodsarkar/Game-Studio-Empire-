@@ -14,6 +14,7 @@ import { Market } from './screens/Market'
 import { Analytics } from './screens/Analytics'
 import { Economy } from './screens/Economy'
 import { Awards } from './screens/Awards'
+import { Season } from './screens/Season'
 import { Missions } from './screens/Missions'
 import { Profile } from './screens/Profile'
 import { Achievements } from './screens/Achievements'
@@ -159,6 +160,7 @@ function GameRoot() {
     analytics: <Analytics />,
     economy: <Economy />,
     awards: <Awards />,
+    season: <Season />,
     missions: <Missions />,
     profile: <Profile />,
     achievements: <Achievements />,

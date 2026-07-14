@@ -252,8 +252,8 @@ function simulateOneWeek(
   }
   employees = survivors
 
-  // Loan interest (weekly, 2% of outstanding balance).
-  if (p.loanBalance > 0) money -= Math.round(p.loanBalance * 0.02)
+  // Loan interest (weekly, 0.3% of outstanding balance).
+  if (p.loanBalance > 0) money -= Math.round(p.loanBalance * 0.003)
 
   // Office rent scales with office size and headcount.
   const officeLvl = upgradeLevel(p.upgrades, 'office')
@@ -262,6 +262,20 @@ function simulateOneWeek(
 
   // Engine licensing royalties.
   for (const rate of Object.values(p.licenses)) money += Math.round(rate * 200)
+
+  // Bankruptcy safety net: if money goes negative, auto-take a loan to cover
+  // the deficit plus a small buffer so the player can recover.
+  let loanBalance = p.loanBalance ?? 0
+  if (money < 0) {
+    const deficit = Math.abs(money) + 500
+    money += deficit
+    loanBalance += deficit
+    addNote({
+      title: '🏦 Emergency Loan',
+      body: `Your studio ran out of cash. An automatic loan of $${deficit.toLocaleString()} was approved.`,
+      type: 'warning',
+    })
+  }
 
   // Season XP accrual + reset.
   let season = { ...p.season, xp: p.season.xp + 10 + seasonXpGain }
@@ -305,6 +319,7 @@ function simulateOneWeek(
     awards,
     season,
     _rp: rp,
+    loanBalance,
     notifications: [...notifications, ...p.notifications].slice(0, 50),
   }
 
@@ -346,6 +361,10 @@ function simulateOneWeek(
       mkNote({ title: '⚠️ ' + ev.title, body: 'A decision is waiting for you in the studio.', type: 'warning' }),
     )
   }
+
+  // Rebuild notifications to capture level-up / achievement / event notes
+  // that were generated after the initial `next` construction.
+  next.notifications = [...notifications, ...p.notifications].slice(0, 50)
 
   return { player: next, market: nextMarket, notes: notifications }
 }
