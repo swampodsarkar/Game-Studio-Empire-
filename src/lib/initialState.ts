@@ -1,5 +1,5 @@
 import type { Difficulty, PlayerState } from '../types'
-import { STARTING_MONEY } from '../config/gameConfig'
+import { STARTING_MONEY, RESEARCH_TREE } from '../config/gameConfig'
 import { generateMissions } from './missions'
 
 export function createInitialPlayer(
@@ -54,7 +54,7 @@ export function createInitialPlayer(
       ],
     games: [],
     engines: [],
-    research: [],
+    research: RESEARCH_TREE.map((r) => ({ id: r.id, unlocked: false })),
     upgrades: [],
     licenses: {},
     loanBalance: 0,

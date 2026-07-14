@@ -272,6 +272,7 @@ export interface Mission {
   reward: { money?: number; xp?: number; fans?: number }
   type: 'release' | 'earn' | 'hire' | 'research' | 'fan' | 'upgrade'
   expiresAt: number
+  claimed?: boolean
 }
 
 export interface AIStudio {

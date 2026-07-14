@@ -136,7 +136,7 @@ function simulateOneWeek(
           let units = Math.max(0, Math.round(rawUnits * bugPenalty))
           units = Math.min(units, g.sales.lifetime - sold)
           const perUnit = g.sales.revenue / Math.max(1, g.sales.lifetime)
-          const weekRevenue = Math.round(units * perUnit * diff.revenueMult)
+          const weekRevenue = Math.round(units * perUnit)
           money += weekRevenue
           fans += Math.round(g.sales.fansGained * 0.05 * bugPenalty)
           if ((g.bugs ?? 0) > 6) fans -= Math.round((g.bugs ?? 0) * 8)
@@ -162,9 +162,9 @@ function simulateOneWeek(
     games[i] = res.project
     if (res.justReleased && res.review) {
       const pub = PUBLISHING.find((x) => x.id === g.publishing) ?? PUBLISHING[0]
-      const sales = computeSales(g, res.review, p, pub, franchiseMult)
+      const sales = computeSales(g, res.review, p, pub, franchiseMult, undefined, diff.revenueMult)
       const bugs = computeBugs(g, p.employees, p.upgrades)
-      const launchRevenue = Math.round((sales.launchDay / Math.max(1, sales.lifetime)) * sales.revenue * diff.revenueMult)
+      const launchRevenue = Math.round((sales.launchDay / Math.max(1, sales.lifetime)) * sales.revenue)
       // Keep the displayed revenue-to-date in lockstep with the cash actually
       // earned at launch (same multiplier), so it always reconciles with copies
       // sold: revenueToDate ≈ sold * (revenue / lifetime).
@@ -317,6 +317,20 @@ function simulateOneWeek(
     if (m.type === 'fan') return { ...m, progress: Math.min(m.goal, Math.max(m.progress, fans)) }
     return m
   })
+  // Auto-grant a mission's reward the week it reaches its goal (once only, so
+  // cumulative `earn`/`fan` missions don't re-pay every week).
+  missions = missions.map((m) => {
+    if (m.claimed || m.progress < m.goal) return m
+    if (m.reward.money) money += m.reward.money
+    if (m.reward.xp) xp += m.reward.xp
+    if (m.reward.fans) fans += m.reward.fans
+    addNote({
+      title: `🏆 ${m.title}`,
+      body: `Mission complete! +${m.reward.xp ?? 0} XP${m.reward.money ? ` · ${formatMoney(m.reward.money)}` : ''}`,
+      type: 'success',
+    })
+    return { ...m, claimed: true }
+  })
 
   let next: PlayerState = {
     ...p,
@@ -337,12 +351,6 @@ function simulateOneWeek(
   next.studioValue = computeStudioValue(next)
   next.companyRating = computeCompanyRating(next)
 
-  while (next.xp >= xpForLevel(next.level)) {
-    next.xp -= xpForLevel(next.level)
-    next.level += 1
-    addNote({ title: `⬆ Level ${next.level}!`, body: 'Your studio is growing in reputation.', type: 'success' })
-  }
-
   const newly = checkAchievements(next)
   for (const id of newly) {
     const def = getAchievement(id)
@@ -353,6 +361,19 @@ function simulateOneWeek(
       addNote({ title: `🏅 ${def.name}`, body: def.description, type: 'success' })
     }
   }
+
+  // Level up AFTER sales/mission/achievement XP is applied so a big reward can
+  // promote the studio in the same week.
+  while (next.xp >= xpForLevel(next.level)) {
+    next.xp -= xpForLevel(next.level)
+    next.level += 1
+    addNote({ title: `⬆ Level ${next.level}!`, body: 'Your studio is growing in reputation.', type: 'success' })
+  }
+
+  // Recompute studio value / rating last, so the dashboard reflects the true
+  // post-payout, post-level-up figures immediately.
+  next.studioValue = computeStudioValue(next)
+  next.companyRating = computeCompanyRating(next)
 
   if (week % 4 === 0) {
     next.history = {
@@ -460,6 +481,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
           stocks: p.stocks ?? {},
           loanBalance: p.loanBalance ?? 0,
           season: p.season ?? { id: 1, xp: 0, claimedTiers: [] },
+          companyRating: p.companyRating ?? 10,
+          studioValue: p.studioValue ?? p.money ?? 0,
           history: p.history ?? { revenue: [0], fans: [0], studioValue: [p.studioValue ?? 0], weeks: [p.week ?? 1] },
         }
         setPlayer(migrated)
@@ -813,6 +836,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
                   // per-copy rate (revenue / lifetime) stays constant and the
                   // "Revenue to date" panel keeps reconciling with copies sold.
                   lifetime: x.sales.lifetime + Math.round(revenue / Math.max(1, x.sales.revenue / Math.max(1, x.sales.lifetime))),
+                  // Also bump copies sold by the same equivalent so "Revenue to
+                  // date" keeps reconciling with "Copies Sold" after a DLC.
+                  sold: (x.sales.sold ?? x.sales.launchDay) + Math.round(revenue / Math.max(1, x.sales.revenue / Math.max(1, x.sales.lifetime))),
                   revenue: x.sales.revenue + revenue,
                   revenueToDate: (x.sales.revenueToDate ?? 0) + revenue,
                 },

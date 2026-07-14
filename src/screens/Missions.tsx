@@ -58,7 +58,7 @@ export function Missions() {
                   <h3 className="text-lg font-bold text-white">{m.title}</h3>
                 </div>
                 <span className={`chip ${complete ? 'border-accent-green/40 text-accent-green' : 'text-white/60'}`}>
-                  {complete ? '✓ Done' : `${m.progress}/${m.goal}`}
+                  {m.claimed ? '✓ Reward claimed' : complete ? '✓ Done' : `${m.progress}/${m.goal}`}
                 </span>
               </div>
               <p className="mb-3 text-sm text-white/60">{m.description}</p>

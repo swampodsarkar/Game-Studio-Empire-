@@ -263,6 +263,8 @@ export function computeSales(
   player: PlayerState,
   publishing: PublishingDef,
   franchiseMult = 1,
+  _engineStats?: ReturnType<typeof getEngineStats>,
+  revenueMult = 1,
 ): SalesData {
   const quality = review.score / 100
   // Blend review quality with marketing hype built up during development.
@@ -292,7 +294,7 @@ export function computeSales(
   const secLvl = upgradeLevel(player.upgrades, 'security')
   const piracyPct = clamp(0.26 - secLvl * 0.03, 0.02, 0.3)
 
-  const revenue = Math.round(lifetime * price * (1 - piracyPct) * publishing.revenueShare)
+  const revenue = Math.round(lifetime * price * (1 - piracyPct) * publishing.revenueShare * revenueMult)
   const qaLvl = upgradeLevel(player.upgrades, 'qa')
   const refundRate = clamp(0.07 - qaLvl * 0.008, 0.005, 0.1)
   const refunds = Math.round(lifetime * refundRate)
